@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>AP-H Tracker</title>
+<style>
+  /* ===== VARIABLES ===== */
+  :root {
+    --gold: #F5C518;
+    --gold-light: #FFD94A;
+    --gold-dim: rgba(245,197,24,0.18);
+    --gold-glow: rgba(245,197,24,0.35);
+    --black: #0A0A0A;
+    --dark: #111111;
+    --card: rgba(255,255,255,0.04);
+    --card-border: rgba(245,197,24,0.15);
+    --glass: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.1);
+    --text: #F0F0F0;
+    --text-muted: rgba(240,240,240,0.5);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.5);
+    --shadow-gold: 0 0 24px rgba(245,197,24,0.2);
+  }
+
+  /* ===== RESET ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== BACKGROUND ===== */
+  .bg-noise {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(245,197,24,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245,197,24,0.04) 0%, transparent 50%),
+      var(--black);
+    pointer-events: none;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(10,10,10,0.85);
+    border-bottom: 1px solid var(--card-border);
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .header-logo {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-glow);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .header-logo img { width: 38px; height: 38px; object-fit: contain; }
+  .header-title { flex: 1; }
+  .header-title h1 {
+    font-size: 18px; font-weight: 700;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.3px;
+  }
+  .header-title p { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .header-badge {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-glow);
+    color: var(--gold);
+    font-size: 10px; font-weight: 600;
+    padding: 4px 8px; border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== NAV TABS ===== */
+  .nav-tabs {
+    display: flex; gap: 4px; padding: 12px 16px 0;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; position: relative; z-index: 1;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 9px 16px; border-radius: 20px;
+    border: 1px solid var(--card-border);
+    background: var(--card);
+    color: var(--text-muted);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--black);
+    font-weight: 700;
+    box-shadow: var(--shadow-gold);
+  }
+  .tab-btn:not(.active):active { background: var(--glass); }
+
+  /* ===== MAIN CONTENT ===== */
+  .main { padding: 16px; position: relative; z-index: 1; padding-bottom: 40px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== CARDS ===== */
+  .glass-card {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .gold-card {
+    background: linear-gradient(135deg, rgba(245,197,24,0.12), rgba(245,197,24,0.05));
+    border: 1px solid var(--gold-glow);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+  }
+
+  /* ===== DAY CARDS ===== */
+  .week-header {
+    font-size: 13px; font-weight: 700; color: var(--gold);
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 8px 0 4px; margin-top: 8px;
+    border-bottom: 1px solid var(--gold-dim);
+    margin-bottom: 8px;
+  }
+  .day-card {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+  .day-card.today { border-color: var(--gold); box-shadow: var(--shadow-gold); }
+  .day-card.rest-day { opacity: 0.7; }
+  .day-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .day-date { font-size: 15px; font-weight: 700; }
+  .day-label { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .today-badge {
+    font-size: 10px; font-weight: 700; padding: 3px 8px;
+    background: var(--gold); color: var(--black);
+    border-radius: 20px; letter-spacing: 0.5px;
+  }
+  .day-score {
+    font-size: 11px; color: var(--text-muted);
+    background: var(--card);
+    padding: 3px 8px; border-radius: 20px;
+    border: 1px solid var(--card-border);
+  }
+
+  /* ===== CHECKBOXES GRID ===== */
+  .checks-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 7px; margin-bottom: 10px;
+  }
+  .check-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 5px; padding: 8px 4px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--card);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .check-item.checked {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+  }
+  .check-item.checked .check-label { color: var(--gold); }
+  .check-icon {
+    width: 26px; height: 26px; border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: all 0.18s;
+    background: transparent;
+  }
+  .check-item.checked .check-icon {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 10px rgba(245,197,24,0.4);
+  }
+  .check-label {
+    font-size: 10px; font-weight: 600;
+    text-align: center; line-height: 1.2;
+    color: var(--text-muted); letter-spacing: 0.2px;
+  }
+
+  /* ===== NOTES ===== */
+  .notes-input {
+    width: 100%; padding: 10px 12px;
+    background: var(--card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text); font-size: 13px;
+    font-family: inherit; resize: none;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .notes-input:focus { border-color: var(--gold); }
+  .notes-input::placeholder { color: var(--text-muted); }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-bar-wrap {
+    height: 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.08); overflow: hidden;
+    margin: 6px 0;
+  }
+  .progress-bar {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transition: width 0.4s ease;
+  }
+
+  /* ===== STATS GRID ===== */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stats-grid.cols3 { grid-template-columns: repeat(3, 1fr); }
+  .stat-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 28px; font-weight: 800;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .stat-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; font-weight: 500; letter-spacing: 0.3px; }
+
+  /* ===== WEEK VIEW ===== */
+  .week-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .week-nav-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    color: var(--text); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent; transition: all 0.15s;
+  }
+  .week-nav-btn:active { background: var(--gold-dim); border-color: var(--gold); }
+  .week-title { font-size: 14px; font-weight: 600; text-align: center; }
+
+  /* ===== SÉANCES MODAL ===== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    width: 100%; max-height: 85vh; overflow-y: auto;
+    background: #141414;
+    border-top: 1px solid var(--card-border);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 16px 40px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-handle {
+    width: 36px; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.2);
+    margin: 0 auto 16px;
+  }
+  .modal-title {
+    font-size: 18px; font-weight: 800; margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .modal-subtitle { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+  .seance-section { margin-bottom: 14px; }
+  .seance-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px solid var(--gold-dim);
+    padding-bottom: 6px; margin-bottom: 8px;
+  }
+  .exercise-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .exercise-name { font-size: 13px; font-weight: 500; }
+  .exercise-detail { font-size: 11px; color: var(--text-muted); }
+  .close-modal {
+    width: 100%; padding: 14px;
+    background: var(--gold); color: var(--black);
+    font-size: 15px; font-weight: 700;
+    border: none; border-radius: var(--radius); cursor: pointer;
+    margin-top: 16px; -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ===== ACTIONS BUTTONS ===== */
+  .actions-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .action-btn {
+    flex: 1; min-width: 120px; padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: var(--text); font-size: 12px; font-weight: 600;
+    cursor: pointer; text-align: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s; display: flex;
+    align-items: center; justify-content: center; gap: 6px;
+  }
+  .action-btn:active { background: var(--gold-dim); border-color: var(--gold); }
+  .action-btn.danger { border-color: rgba(255,60,60,0.3); color: #ff6060; }
+  .action-btn.danger:active { background: rgba(255,60,60,0.1); }
+  #importFile { display: none; }
+
+  /* ===== CYCLE STATS ===== */
+  .cycle-ring {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 0;
+  }
+  .ring-wrap {
+    width: 120px; height: 120px; position: relative; margin-bottom: 8px;
+  }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-value {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 800;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .ring-sub { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+  .ring-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+  /* ===== LIST ROW ===== */
+  .list-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row-label { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .list-row-val { font-size: 15px; font-weight: 700; color: var(--gold); }
+
+  /* ===== SECTION DIVIDER ===== */
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-muted);
+    margin: 20px 0 10px;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-muted); font-size: 14px;
+  }
+  .empty-state .emoji { font-size: 36px; margin-bottom: 8px; }
+
+  /* ===== TOASTS ===== */
+  #toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #1a1a1a; border: 1px solid var(--gold-glow);
+    color: var(--text); font-size: 13px; font-weight: 500;
+    padding: 11px 20px; border-radius: 20px;
+    z-index: 300; transition: transform 0.3s ease; white-space: nowrap;
+    box-shadow: var(--shadow);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== PRINT ===== */
+  @media print {
+    body { background: white; color: black; }
+    .header, .nav-tabs, .actions-row, .modal-overlay, #toast { display: none !important; }
+    .day-card, .glass-card { border: 1px solid #ccc; background: white; }
+    .main { padding: 0; }
+  }
+
+  /* ===== RESPONSIVE DESKTOP ===== */
+  @media (min-width: 600px) {
+    .main { max-width: 600px; margin: 0 auto; }
+    .checks-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* ===== SCROLL ANIM ===== */
+  .day-card { animation: fadeIn 0.3s ease both; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Séance buttons on day cards */
+  .seance-btns { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+  .seance-info-btn {
+    font-size: 10px; font-weight: 600;
+    padding: 3px 9px; border-radius: 20px;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-glow);
+    color: var(--gold); cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 0.3px;
+  }
+  .seance-info-btn:active { background: var(--gold); color: var(--black); }
+</style>
+</head>
+<body>
+
+<div class="bg-noise"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo" id="logoBtn">
+    <!-- Logo will be set via JS from embedded base64 -->
+    <svg viewBox="0 0 44 44" width="38" height="38" xmlns="http://www.w3.org/2000/svg">
+      <text x="22" y="30" text-anchor="middle" font-size="12" font-weight="900" fill="#F5C518" font-family="Arial Black">AP-H</text>
+    </svg>
+  </div>
+  <div class="header-title">
+    <h1>AP-H Tracker</h1>
+    <p>26 Avr → 1 Jul 2026</p>
+  </div>
+  <div class="header-badge" id="globalPercent">0%</div>
+</div>
+
+<!-- NAV -->
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="switchView('today')">Aujourd'hui</button>
+  <button class="tab-btn" onclick="switchView('week')">Semaine</button>
+  <button class="tab-btn" onclick="switchView('cycle')">Cycle</button>
+  <button class="tab-btn" onclick="switchView('seances')">Séances</button>
+  <button class="tab-btn" onclick="switchView('settings')">Réglages</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ===== VIEW: TODAY ===== -->
+  <div class="view active" id="view-today">
+    <div id="todayContainer"></div>
+  </div>
+
+  <!-- ===== VIEW: WEEK ===== -->
+  <div class="view" id="view-week">
+    <div class="week-nav">
+      <button class="week-nav-btn" onclick="changeWeek(-1)">‹</button>
+      <div class="week-title" id="weekTitle">Semaine</div>
+      <button class="week-nav-btn" onclick="changeWeek(1)">›</button>
+    </div>
+    <div id="weekStatsCard" class="gold-card"></div>
+    <div id="weekDaysContainer"></div>
+  </div>
+
+  <!-- ===== VIEW: CYCLE ===== -->
+  <div class="view" id="view-cycle">
+    <div id="cycleContainer"></div>
+  </div>
+
+  <!-- ===== VIEW: SÉANCES ===== -->
+  <div class="view" id="view-seances">
+    <div class="section-label">Programme APH</div>
+    <div class="glass-card" id="aph1Card" onclick="openModal('aph1')" style="cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--gold)">APH1 – Peak</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">80 min · Squat / Tirage / Accessoires</div>
+        </div>
+        <div style="font-size:20px;opacity:0.5">›</div>
+      </div>
+    </div>
+    <div class="glass-card" id="aph2Card" onclick="openModal('aph2')" style="cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--gold)">APH2 – Peak</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">60 min · DC / Tirage TRX / Accessoires</div>
+        </div>
+        <div style="font-size:20px;opacity:0.5">›</div>
+      </div>
+    </div>
+    <div class="glass-card" id="aph3Card" onclick="openModal('aph3')" style="cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--gold)">APH3 – Peak</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">60 min · Tractions / Gorilla Row / Gainage</div>
+        </div>
+        <div style="font-size:20px;opacity:0.5">›</div>
+      </div>
+    </div>
+    <div class="section-label">À propos du cycle</div>
+    <div class="glass-card">
+      <div class="card-title">Objectifs hebdomadaires</div>
+      <div class="list-row"><span class="list-row-label">🏋️ Séances APH</span><span class="list-row-val">3/sem</span></div>
+      <div class="list-row"><span class="list-row-label">🥋 Séances JJB</span><span class="list-row-val">3/sem</span></div>
+      <div class="list-row"><span class="list-row-label">💧 Hydratation</span><span class="list-row-val">2.5L/j</span></div>
+      <div class="list-row"><span class="list-row-label">😴 Sommeil</span><span class="list-row-val">Chaque j</span></div>
+      <div class="list-row"><span class="list-row-label">🥗 Nutrition</span><span class="list-row-val">Chaque j</span></div>
+      <div class="list-row"><span class="list-row-label">💊 Compléments</span><span class="list-row-val">Chaque j</span></div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: SETTINGS ===== -->
+  <div class="view" id="view-settings">
+    <div class="section-label">Données</div>
+    <div class="actions-row">
+      <button class="action-btn" onclick="exportData()">📤 Exporter JSON</button>
+      <button class="action-btn" onclick="document.getElementById('importFile').click()">📥 Importer JSON</button>
+      <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+    </div>
+    <div class="actions-row">
+      <button class="action-btn" onclick="window.print()">🖨️ Imprimer</button>
+      <button class="action-btn danger" onclick="resetData()">🗑️ Réinitialiser</button>
+    </div>
+    <div class="section-label">Infos</div>
+    <div class="glass-card">
+      <div class="list-row"><span class="list-row-label">📅 Début</span><span class="list-row-val">26 Avr 2026</span></div>
+      <div class="list-row"><span class="list-row-label">📅 Fin</span><span class="list-row-val">1 Jul 2026</span></div>
+      <div class="list-row"><span class="list-row-label">📆 Durée</span><span class="list-row-val" id="cycleDays">—</span></div>
+      <div class="list-row"><span class="list-row-label">💾 Données</span><span class="list-row-val">Local</span></div>
+    </div>
+    <div class="section-label">Logo</div>
+    <div class="glass-card" style="text-align:center">
+      <img id="logoPreview" src="" style="max-width:120px;border-radius:12px;margin:0 auto;display:block" alt="AP-H Logo">
+      <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Logo AP-H Tracker</p>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ===== MODAL SÉANCES ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalContent">
+    <div class="modal-handle"></div>
+    <div id="modalBody"></div>
+    <button class="close-modal" onclick="closeModal(null,true)">Fermer</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- EMBEDDED LOGO (base64 placeholder replaced by uploaded img logic) -->
+<img id="hiddenLogo" src="/mnt/user-data/uploads/ChatGPT_Image_27_avr__2026__11_01_35.png" style="display:none" 
+  onload="onLogoLoad(this)" onerror="onLogoError()">
+
+<script>
+// =============================================
+// DATA & CONFIG
+// =============================================
+const START_DATE = new Date(2026, 3, 26); // April 26 2026
+const END_DATE   = new Date(2026, 6, 1);  // July 1 2026
+
+const FIELDS = [
+  { key:'aph1', label:'APH1', emoji:'🏋️' },
+  { key:'aph2', label:'APH2', emoji:'💪' },
+  { key:'aph3', label:'APH3', emoji:'🔥' },
+  { key:'jjb',  label:'JJB',  emoji:'🥋' },
+  { key:'water',label:'Eau',  emoji:'💧' },
+  { key:'sleep',label:'Sommeil',emoji:'😴' },
+  { key:'nutrition',label:'Nutri',emoji:'🥗' },
+  { key:'supps',label:'Compls',emoji:'💊' },
+  { key:'rest', label:'Repos', emoji:'🌿' },
+];
+
+const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+
+const SEANCES = {
+  aph1: {
+    title: 'APH1 – Peak', duration: '80 minutes',
+    sections: [
+      { title: 'Activation', exercises: [
+        { name: 'Clamshell band', detail: '2 × 15' },
+        { name: 'Ischio machine', detail: '2 × 20' },
+        { name: 'Banc à lombaires', detail: '2 × 15' },
+      ]},
+      { title: 'Séance principale', exercises: [
+        { name: 'Squat', detail: '4 × 5 @ 90 kg' },
+        { name: 'Fentes bulgares', detail: '3 × 8 @ 24 kg KB' },
+        { name: 'Tirage poulie', detail: '4 × 12' },
+      ]},
+      { title: 'Accessoires', exercises: [
+        { name: 'Épaule chevalier servant', detail: '2 × 12 @ 12 kg KB + élastique' },
+      ]},
+      { title: 'Finisher', exercises: [
+        { name: 'Biceps + Triceps', detail: '' },
+      ]},
+    ]
+  },
+  aph2: {
+    title: 'APH2 – Peak', duration: '60 minutes',
+    sections: [
+      { title: 'Activation', exercises: [
+        { name: 'Mountain climber', detail: '2 × 20' },
+        { name: 'Rotation épaule + gainage', detail: '2 × 12' },
+        { name: 'Pompes sautées', detail: '2 × 5' },
+      ]},
+      { title: 'Séance principale', exercises: [
+        { name: 'DC (Développé Couché)', detail: '4 × 8' },
+        { name: 'DC incliné haltères', detail: '3 × 12' },
+        { name: 'Tirage TRX', detail: '4 × 12 tempo' },
+      ]},
+      { title: 'Accessoires', exercises: [
+        { name: 'Montées genoux suspendu', detail: '3 × 12' },
+      ]},
+      { title: 'Finisher', exercises: [
+        { name: 'Biceps', detail: '' },
+        { name: 'Rotation barre', detail: '' },
+      ]},
+    ]
+  },
+  aph3: {
+    title: 'APH3 – Peak', duration: '60 minutes',
+    sections: [
+      { title: 'Activation', exercises: [
+        { name: 'Antirotation élastique', detail: '2 × 12' },
+        { name: 'Superman', detail: '2 × 12 @ 1 kg' },
+        { name: 'Battle legs', detail: '2 × 20' },
+      ]},
+      { title: 'Séance principale', exercises: [
+        { name: 'Tractions', detail: '4 × 8, lesté si possible' },
+        { name: 'Gorilla Row KB', detail: '3 × 16' },
+        { name: 'Pompes Swiss Ball', detail: '4 × 12' },
+      ]},
+      { title: 'Accessoires', exercises: [
+        { name: 'Face Pull', detail: '3 × 12' },
+      ]},
+      { title: 'Finisher', exercises: [
+        { name: 'Biceps & Triceps', detail: '' },
+        { name: 'Ischio machine ou Copenhagen plank', detail: '' },
+      ]},
+    ]
+  }
+};
+
+// =============================================
+// STATE
+// =============================================
+let data = {}; // { 'YYYY-MM-DD': { aph1:bool, aph2:bool, ..., notes:'' } }
+let currentWeekOffset = 0;
+let currentView = 'today';
+
+function loadData() {
+  const raw = localStorage.getItem('aph_tracker_v1');
+  data = raw ? JSON.parse(raw) : {};
+}
+function saveData() {
+  localStorage.setItem('aph_tracker_v1', JSON.stringify(data));
+  updateGlobalPercent();
+}
+function getDayData(dateStr) {
+  if (!data[dateStr]) data[dateStr] = { notes: '' };
+  return data[dateStr];
+}
+function toggleField(dateStr, key) {
+  const d = getDayData(dateStr);
+  d[key] = !d[key];
+  saveData();
+  refreshCurrentView();
+}
+function setNote(dateStr, val) {
+  getDayData(dateStr).notes = val;
+  saveData();
+}
+
+// =============================================
+// DATE UTILS
+// =============================================
+function dateToStr(d) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+function allDates() {
+  const result = [];
+  const d = new Date(START_DATE);
+  while (d <= END_DATE) {
+    result.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return result;
+}
+function isToday(d) {
+  const t = new Date();
+  return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+}
+function formatDate(d) {
+  return DAYS_FR[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR[d.getMonth()];
+}
+function dayScore(dateStr) {
+  const d = getDayData(dateStr);
+  const total = FIELDS.length;
+  const checked = FIELDS.filter(f => d[f.key]).length;
+  return { checked, total, pct: Math.round(checked/total*100) };
+}
+
+// =============================================
+// RENDER DAY CARD
+// =============================================
+function renderDayCard(date, compact) {
+  const ds = dateToStr(date);
+  const d = getDayData(ds);
+  const score = dayScore(ds);
+  const today = isToday(date);
+  
+  let checksHtml = '';
+  FIELDS.forEach(f => {
+    const checked = !!d[f.key];
+    checksHtml += `
+      <div class="check-item ${checked?'checked':''}" onclick="toggleField('${ds}','${f.key}')">
+        <div class="check-icon">${checked ? '✓' : ''}</div>
+        <div class="check-label">${f.emoji} ${f.label}</div>
+      </div>`;
+  });
+
+  const seanceBtns = `
+    <div class="seance-btns">
+      <span class="seance-info-btn" onclick="event.stopPropagation();openModal('aph1')">APH1 ›</span>
+      <span class="seance-info-btn" onclick="event.stopPropagation();openModal('aph2')">APH2 ›</span>
+      <span class="seance-info-btn" onclick="event.stopPropagation();openModal('aph3')">APH3 ›</span>
+    </div>`;
+
+  return `
+    <div class="day-card ${today?'today':''}" id="card-${ds}">
+      <div class="day-header">
+        <div>
+          <div class="day-date">${formatDate(date)}</div>
+          ${today ? '<div style="font-size:10px;color:var(--gold);font-weight:600;margin-top:2px">Aujourd\'hui</div>' : ''}
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="day-score">${score.checked}/${score.total}</div>
+          ${score.checked > 0 ? `<div style="font-size:11px;color:var(--gold);font-weight:700">${score.pct}%</div>` : ''}
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" style="width:${score.pct}%"></div>
+      </div>
+      <div class="checks-grid" style="margin-top:10px">${checksHtml}</div>
+      ${seanceBtns}
+      <textarea class="notes-input" rows="2" placeholder="Notes du jour..." 
+        onchange="setNote('${ds}',this.value)">${d.notes||''}</textarea>
+    </div>`;
+}
+
+// =============================================
+// VIEW: TODAY
+// =============================================
+function renderToday() {
+  const today = new Date();
+  const container = document.getElementById('todayContainer');
+  
+  if (today < START_DATE || today > END_DATE) {
+    // Show nearest day
+    const target = today < START_DATE ? START_DATE : END_DATE;
+    container.innerHTML = `
+      <div class="gold-card" style="text-align:center;padding:20px">
+        <div style="font-size:24px;margin-bottom:8px">📅</div>
+        <div style="font-weight:700;margin-bottom:4px">Cycle ${today < START_DATE ? 'pas encore commencé' : 'terminé'}</div>
+        <div style="font-size:12px;color:var(--text-muted)">Début le 26 avril 2026</div>
+      </div>
+      ${renderDayCard(target)}`;
+    return;
+  }
+  
+  // Show today + tomorrow preview
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  container.innerHTML = renderDayCard(today);
+  
+  if (tomorrow <= END_DATE) {
+    container.innerHTML += `
+      <div class="section-label" style="margin-top:8px">Demain</div>
+      ${renderDayCard(tomorrow)}`;
+  }
+}
+
+// =============================================
+// VIEW: WEEK
+// =============================================
+function getWeekStart(offset) {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + offset * 7);
+  monday.setHours(0,0,0,0);
+  return monday;
+}
+
+function renderWeek() {
+  const weekStart = getWeekStart(currentWeekOffset);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  // Title
+  document.getElementById('weekTitle').textContent =
+    `${weekStart.getDate()} ${MONTHS_FR[weekStart.getMonth()]} – ${weekEnd.getDate()} ${MONTHS_FR[weekEnd.getMonth()]}`;
+
+  // Collect week days within cycle
+  let totalChecked = 0, totalPossible = 0;
+  let aphCount = 0, jjbCount = 0, daysInCycle = 0;
+  let weekDaysHtml = '';
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    if (d < START_DATE || d > END_DATE) continue;
+    daysInCycle++;
+    const ds = dateToStr(d);
+    const dd = getDayData(ds);
+    const s = dayScore(ds);
+    totalChecked += s.checked;
+    totalPossible += s.total;
+    if (dd.aph1) aphCount++;
+    if (dd.aph2) aphCount++;
+    if (dd.aph3) aphCount++;
+    if (dd.jjb)  jjbCount++;
+    weekDaysHtml += renderDayCard(d);
+  }
+
+  const pct = totalPossible > 0 ? Math.round(totalChecked/totalPossible*100) : 0;
+
+  // Stats card
+  document.getElementById('weekStatsCard').innerHTML = `
+    <div class="card-title">Score Semaine</div>
+    <div class="stats-grid cols3">
+      <div class="stat-card">
+        <div class="stat-value">${pct}%</div>
+        <div class="stat-label">Compliance</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${aphCount}</div>
+        <div class="stat-label">Séances APH</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${jjbCount}</div>
+        <div class="stat-label">Séances JJB</div>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" style="width:${pct}%"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);text-align:right;margin-top:4px">${totalChecked} / ${totalPossible} cases cochées</div>
+  `;
+
+  document.getElementById('weekDaysContainer').innerHTML =
+    daysInCycle === 0
+      ? '<div class="empty-state"><div class="emoji">📅</div>Semaine hors du cycle</div>'
+      : weekDaysHtml;
+}
+
+function changeWeek(dir) {
+  currentWeekOffset += dir;
+  renderWeek();
+}
+
+// =============================================
+// VIEW: CYCLE
+// =============================================
+function renderCycle() {
+  const dates = allDates();
+  let totalDays = dates.length;
+  let daysElapsed = 0;
+  let totalChecked = 0, totalPossible = 0;
+  let aph1=0,aph2=0,aph3=0,jjb=0,water=0,sleep=0,nutrition=0,supps=0,rest=0;
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  dates.forEach(d => {
+    const ds = dateToStr(d);
+    const dd = getDayData(ds);
+    const s = dayScore(ds);
+    totalChecked += s.checked;
+    totalPossible += s.total;
+    if (d <= today) daysElapsed++;
+    if (dd.aph1) aph1++;
+    if (dd.aph2) aph2++;
+    if (dd.aph3) aph3++;
+    if (dd.jjb)  jjb++;
+    if (dd.water) water++;
+    if (dd.sleep) sleep++;
+    if (dd.nutrition) nutrition++;
+    if (dd.supps) supps++;
+    if (dd.rest)  rest++;
+  });
+
+  const progressPct = Math.round(daysElapsed/totalDays*100);
+  const compliancePct = totalPossible > 0 ? Math.round(totalChecked/totalPossible*100) : 0;
+  const circumference = 2 * Math.PI * 52;
+  const offset = circumference * (1 - compliancePct/100);
+
+  document.getElementById('cycleContainer').innerHTML = `
+    <div class="gold-card">
+      <div class="card-title">Progression du cycle</div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="url(#goldGrad)" stroke-width="10"
+              stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+              stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#FFD94A"/>
+                <stop offset="100%" stop-color="#F5C518"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="ring-value">${compliancePct}<div class="ring-sub">%</div></div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:22px;font-weight:800;color:var(--gold)">${daysElapsed} / ${totalDays}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Jours écoulés</div>
+          <div class="progress-bar-wrap" style="margin-top:10px">
+            <div class="progress-bar" style="width:${progressPct}%"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${progressPct}% du cycle</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Séances</div>
+    <div class="stats-grid cols3">
+      <div class="stat-card"><div class="stat-value">${aph1}</div><div class="stat-label">APH1</div></div>
+      <div class="stat-card"><div class="stat-value">${aph2}</div><div class="stat-label">APH2</div></div>
+      <div class="stat-card"><div class="stat-value">${aph3}</div><div class="stat-label">APH3</div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">${aph1+aph2+aph3}</div><div class="stat-label">Total APH</div></div>
+      <div class="stat-card"><div class="stat-value">${jjb}</div><div class="stat-label">Total JJB</div></div>
+    </div>
+
+    <div class="section-label">Habitudes</div>
+    <div class="glass-card">
+      ${renderListRow('💧','Hydratation OK', water, daysElapsed)}
+      ${renderListRow('😴','Sommeil OK', sleep, daysElapsed)}
+      ${renderListRow('🥗','Nutrition OK', nutrition, daysElapsed)}
+      ${renderListRow('💊','Compléments OK', supps, daysElapsed)}
+      ${renderListRow('🌿','Jours repos', rest, daysElapsed)}
+    </div>
+  `;
+}
+
+function renderListRow(emoji, label, val, total) {
+  const pct = total > 0 ? Math.round(val/total*100) : 0;
+  return `
+    <div class="list-row">
+      <div class="list-row-label">${emoji} ${label}</div>
+      <div style="text-align:right">
+        <div class="list-row-val">${val}<span style="font-size:11px;color:var(--text-muted);font-weight:400"> / ${total}</span></div>
+        <div style="font-size:10px;color:var(--text-muted)">${pct}%</div>
+      </div>
+    </div>`;
+}
+
+// =============================================
+// GLOBAL PERCENT
+// =============================================
+function updateGlobalPercent() {
+  const dates = allDates();
+  let checked = 0, total = 0;
+  dates.forEach(d => {
+    const s = dayScore(dateToStr(d));
+    checked += s.checked;
+    total += s.total;
+  });
+  const pct = total > 0 ? Math.round(checked/total*100) : 0;
+  document.getElementById('globalPercent').textContent = pct + '%';
+}
+
+// =============================================
+// MODALS
+// =============================================
+function openModal(key) {
+  const s = SEANCES[key];
+  let html = `
+    <div class="modal-title">${s.title}</div>
+    <div class="modal-subtitle">⏱ ${s.duration}</div>`;
+  s.sections.forEach(sec => {
+    html += `<div class="seance-section">
+      <div class="seance-section-title">${sec.title}</div>`;
+    sec.exercises.forEach(ex => {
+      html += `<div class="exercise-row">
+        <div class="exercise-name">${ex.name}</div>
+        <div class="exercise-detail">${ex.detail}</div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(evt, force) {
+  if (force || (evt && evt.target === document.getElementById('modalOverlay'))) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+// =============================================
+// VIEWS SWITCHING
+// =============================================
+function switchView(name) {
+  currentView = name;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  refreshCurrentView();
+}
+
+function refreshCurrentView() {
+  if (currentView === 'today') renderToday();
+  else if (currentView === 'week') renderWeek();
+  else if (currentView === 'cycle') renderCycle();
+}
+
+// =============================================
+// EXPORT / IMPORT / RESET
+// =============================================
+function exportData() {
+  const json = JSON.stringify({ version: 1, data, exportDate: new Date().toISOString() }, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'aph_tracker_' + dateToStr(new Date()) + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('📤 Export réussi !');
+}
+
+function importData(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const obj = JSON.parse(e.target.result);
+      data = obj.data || obj;
+      saveData();
+      refreshCurrentView();
+      showToast('📥 Import réussi !');
+    } catch {
+      showToast('❌ Fichier invalide');
+    }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+function resetData() {
+  if (confirm('⚠️ Réinitialiser TOUTES les données ? Cette action est irréversible.')) {
+    data = {};
+    saveData();
+    refreshCurrentView();
+    showToast('🗑️ Données réinitialisées');
+  }
+}
+
+// =============================================
+// TOAST
+// =============================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// =============================================
+// LOGO HANDLING
+// =============================================
+function onLogoLoad(img) {
+  // Set header logo
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const b64 = canvas.toDataURL('image/png');
+  const logoEl = document.querySelector('.header-logo');
+  logoEl.innerHTML = `<img src="${b64}" style="width:38px;height:38px;object-fit:contain;border-radius:4px">`;
+  const preview = document.getElementById('logoPreview');
+  if (preview) preview.src = b64;
+}
+function onLogoError() {
+  // Keep SVG fallback
+}
+
+// =============================================
+// INIT
+// =============================================
+function init() {
+  loadData();
+  
+  // Cycle days count
+  const days = allDates().length;
+  const el = document.getElementById('cycleDays');
+  if (el) el.textContent = days + ' jours';
+
+  // Render today view
+  renderToday();
+  updateGlobalPercent();
+
+  // Scroll to today card after render
+  setTimeout(() => {
+    const todayCard = document.querySelector('.day-card.today');
+    if (todayCard) todayCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// Start
+init();
+</script>
+</body>
+</html>
