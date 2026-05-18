@@ -8,16 +8,15 @@
 <meta name="apple-mobile-web-app-title" content="AP-H">
 <title>AP-H Tracker</title>
 
+<!-- Icon generated as PNG via canvas so Safari picks it up correctly -->
 <link rel="apple-touch-icon" id="appleIcon">
-<link rel="icon" id="favIcon">
+<link rel="icon" id="favIcon" type="image/png">
 <script>
-// Generate feather icon as PNG via canvas (required — Safari ignores SVG data URIs for apple-touch-icon)
 (function(){
   function makeIcon(size, radius) {
     const c = document.createElement('canvas');
     c.width = c.height = size;
     const ctx = c.getContext('2d');
-    // Rounded background
     const r = radius;
     ctx.beginPath();
     ctx.moveTo(r,0); ctx.lineTo(size-r,0);
@@ -25,69 +24,46 @@
     ctx.arcTo(size,size,size-r,size,r); ctx.lineTo(r,size);
     ctx.arcTo(0,size,0,size-r,r); ctx.lineTo(0,r);
     ctx.arcTo(0,0,r,0,r); ctx.closePath();
-    ctx.fillStyle = '#080808';
-    ctx.fill();
-    // Draw feather (plume) in gold
-    const s = size; ctx.save();
+    ctx.fillStyle = '#080808'; ctx.fill();
+    ctx.save();
     ctx.strokeStyle = '#F5C518'; ctx.fillStyle = '#F5C518';
-    ctx.lineWidth = s * 0.028;
+    ctx.lineWidth = size * 0.028;
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    // Scale: feather fits in ~60% of icon
-    const sc = s / 180;
+    const sc = size / 180;
     ctx.scale(sc, sc);
-    // Feather quill spine: from bottom-center curving up-right to tip
-    const cx = 90, base = 155, tip_x = 110, tip_y = 28;
+    const qx = 90, base = 155, tx = 108, ty = 26;
     ctx.beginPath();
-    ctx.moveTo(cx, base);
-    ctx.bezierCurveTo(cx-8, 110, tip_x-20, 60, tip_x, tip_y);
+    ctx.moveTo(qx, base);
+    ctx.bezierCurveTo(qx-10, 110, tx-22, 62, tx, ty);
     ctx.stroke();
-    // Left vane barbs
-    for(let i=0;i<9;i++){
-      const t = i/8;
-      const bx = cx + (tip_x-cx)*t*t - 8*(1-t);
-      const by = base + (tip_y-base)*t;
-      const ex = bx - 32*(1-t*0.7);
-      const ey = by + 14*(1-t);
-      ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ex,ey); ctx.stroke();
+    for(let i=0;i<10;i++){
+      const t=i/9;
+      const bx=qx+(tx-qx)*t*t-8*(1-t), by=base+(ty-base)*t;
+      ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx-34*(1-t*0.7), by+15*(1-t)); ctx.stroke();
     }
-    // Right vane barbs
-    for(let i=0;i<9;i++){
-      const t = i/8;
-      const bx = cx + (tip_x-cx)*t*t - 8*(1-t);
-      const by = base + (tip_y-base)*t;
-      const ex = bx + 26*(1-t*0.6);
-      const ey = by + 10*(1-t);
-      ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ex,ey); ctx.stroke();
+    for(let i=0;i<10;i++){
+      const t=i/9;
+      const bx=qx+(tx-qx)*t*t-8*(1-t), by=base+(ty-base)*t;
+      ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+26*(1-t*0.6), by+11*(1-t)); ctx.stroke();
     }
-    // Feather tip fill
-    ctx.beginPath();
-    ctx.arc(tip_x, tip_y, s*0.025/sc, 0, Math.PI*2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(tx, ty, size*0.022/sc, 0, Math.PI*2); ctx.fill();
     ctx.restore();
     return c.toDataURL('image/png');
   }
   window.addEventListener('DOMContentLoaded', function(){
-    const icon180 = makeIcon(180, 40);
-    const icon32  = makeIcon(32, 7);
-    document.getElementById('appleIcon').href = icon180;
-    document.getElementById('favIcon').href   = icon32;
-    // Also update as type
-    document.getElementById('favIcon').type = 'image/png';
+    document.getElementById('appleIcon').href = makeIcon(180, 40);
+    document.getElementById('favIcon').href   = makeIcon(32, 7);
   });
 })();
 </script>
 
 <style>
-/* ===========================
-   VARIABLES & RESET
-=========================== */
 :root {
   --gold: #F5C518;
   --gold-light: #FFD94A;
   --gold-dim: rgba(245,197,24,0.15);
   --gold-glow: rgba(245,197,24,0.3);
   --black: #080808;
-  --dark: #111;
   --card: rgba(255,255,255,0.04);
   --glass: rgba(255,255,255,0.055);
   --glass-border: rgba(255,255,255,0.09);
@@ -100,55 +76,60 @@
   --radius-xs: 8px;
   --shadow: 0 8px 40px rgba(0,0,0,0.6);
   --shadow-gold: 0 0 20px rgba(245,197,24,0.25);
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
-  --nav-height: 56px;
-  --nav-total: calc(var(--nav-height) + var(--safe-bottom));
+  /* Nav height constant — never changes */
+  --nav-h: 54px;
 }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; height: -webkit-fill-available; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Background on html itself fills notch/safe-area zones */
+  background: #080808;
+  height: 100%;
+}
+
 body {
   font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-  background: var(--black);
+  background: #080808;
   color: var(--text);
+  /* Always fill the full screen even on short-content pages */
   min-height: 100vh;
-  min-height: -webkit-fill-available;
+  min-height: 100dvh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
+
 button, input, textarea, select { font-family: inherit; }
 
-/* ===========================
-   BACKGROUND
-=========================== */
+/* ── Background ─────────────────────────────── */
 .bg {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  position: fixed;
+  /* Overshoot edges so safe-area zones are also covered */
+  top: -60px; left: -20px; right: -20px; bottom: -60px;
+  z-index: 0; pointer-events: none;
   background:
     radial-gradient(ellipse 70% 50% at 15% 5%, rgba(245,197,24,0.07) 0%, transparent 60%),
     radial-gradient(ellipse 50% 40% at 85% 85%, rgba(245,197,24,0.04) 0%, transparent 50%),
-    var(--black);
+    #080808;
 }
 
-/* ===========================
-   HEADER
-=========================== */
+/* ── Header ─────────────────────────────────── */
 .header {
   position: sticky; top: 0; z-index: 100;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  background: rgba(8,8,8,0.88);
+  background: rgba(8,8,8,0.92);
   border-bottom: 1px solid var(--gold-border);
-  padding: 10px 16px 10px;
-  padding-top: max(10px, var(--safe-top));
   display: flex; align-items: center; gap: 11px;
+  padding: 10px 16px;
+  padding-top: max(10px, env(safe-area-inset-top, 0px));
 }
 .hdr-logo {
   width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
   background: var(--gold-dim); border: 1px solid var(--gold-glow);
-  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
 }
 .hdr-logo svg { width: 34px; height: 34px; }
 .hdr-title { flex: 1; }
@@ -162,76 +143,78 @@ button, input, textarea, select { font-family: inherit; }
 .hdr-badge {
   background: var(--gold-dim); border: 1px solid var(--gold-glow);
   color: var(--gold); font-size: 11px; font-weight: 700;
-  padding: 4px 10px; border-radius: 20px; letter-spacing: 0.3px;
+  padding: 4px 10px; border-radius: 20px;
 }
 .hdr-import-btn {
   background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border);
-  color: var(--text-mid); font-size: 18px; font-weight: 700;
+  color: var(--text-mid); font-size: 18px;
   width: 34px; height: 34px; border-radius: 10px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
 }
 .hdr-import-btn:active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
 
-/* ===========================
-   BOTTOM NAV — TRULY FIXED, NEVER MOVES
-=========================== */
+/* ── Bottom Nav ─────────────────────────────── */
+/*
+ * KEY RULES to prevent the nav from moving:
+ * 1. Fixed pixel height (--nav-h) for the visible tab strip
+ * 2. Safe-area handled via padding-bottom in box-sizing:content-box
+ *    → the nav grows DOWNWARD into the home indicator zone, not inward
+ * 3. Fully opaque background (#080808) — no transparency that reveals
+ *    the home indicator pill underneath
+ * 4. GPU layer via transform:translateZ(0) — isolates it from reflows
+ * 5. nav-item height fixed to --nav-h with overflow:hidden — no child
+ *    can push the bar taller
+ */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: 200;
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  background: rgba(8,8,8,0.97);
+  z-index: 500;
+  background: #080808;
   border-top: 1px solid var(--gold-border);
   display: flex;
-  /* Fixed pixel height for the tab bar itself */
-  height: 54px;
-  /* Safe area padding BELOW the fixed height (home indicator on iPhone X+) */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  /* Include safe area in overall box so it grows downward, not inward */
+  height: var(--nav-h);
+  /* box-sizing:content-box lets padding-bottom extend the element
+     downward without shrinking the 54px content area */
   box-sizing: content-box;
-  padding-left: env(safe-area-inset-left, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left:  env(safe-area-inset-left,  0px);
   padding-right: env(safe-area-inset-right, 0px);
-  /* Prevent ANY layout reflow from touching this element */
-  will-change: transform;
+  /* GPU compositing layer — prevents layout reflow from touching this */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  will-change: transform;
 }
 .nav-item {
-  flex: 1; display: flex; flex-direction: column;
+  flex: 1;
+  display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 6px 2px 4px;
   gap: 3px;
+  padding: 5px 2px 0;
+  /* Lock height to exactly the nav content height */
+  height: var(--nav-h);
+  overflow: hidden;
   cursor: pointer; border: none; background: none;
   color: var(--text-muted); font-size: 8.5px; font-weight: 600;
   letter-spacing: 0.3px; text-transform: uppercase;
   transition: color 0.18s;
-  /* Fixed height to match parent, never expands */
-  height: 54px;
-  overflow: hidden;
 }
-.nav-item .nav-icon { font-size: 19px; line-height: 1; transition: transform 0.18s; flex-shrink: 0; }
+.nav-item .nav-icon { font-size: 19px; line-height: 1; flex-shrink: 0; transition: transform 0.18s; }
 .nav-item.active { color: var(--gold); }
 .nav-item.active .nav-icon { transform: scale(1.12); }
 
-/* ===========================
-   MAIN CONTENT
-=========================== */
+/* ── Main content ───────────────────────────── */
 .main {
   position: relative; z-index: 1;
   padding: 14px 14px;
-  /* Fixed offset: 54px nav + safe area + breathing room */
-  padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px) + 22px);
+  /* Bottom clearance = fixed nav height + safe area + breathing room */
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 22px);
   max-width: 600px; margin: 0 auto;
 }
 .view { display: none; animation: fadeView 0.25s ease; }
 .view.active { display: block; }
 @keyframes fadeView { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
-/* ===========================
-   CARDS
-=========================== */
+/* ── Cards ──────────────────────────────────── */
 .glass-card {
   background: var(--glass);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -253,19 +236,15 @@ button, input, textarea, select { font-family: inherit; }
   text-transform: uppercase; color: var(--text-muted); margin: 18px 0 10px;
 }
 
-/* ===========================
-   DAY CARD
-=========================== */
+/* ── Day card ───────────────────────────────── */
 .day-card {
-  background: var(--glass); backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
   animation: fadeIn 0.3s ease both;
 }
 .day-card.today { border-color: rgba(245,197,24,0.5); box-shadow: var(--shadow-gold); }
 @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-
 .day-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
 .day-date { font-size: 16px; font-weight: 800; }
 .today-pill {
@@ -280,24 +259,20 @@ button, input, textarea, select { font-family: inherit; }
 }
 .day-score b { color: var(--gold); }
 
-/* ===========================
-   CHECKS GRID
-=========================== */
+/* ── Check grid ─────────────────────────────── */
 .checks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 10px; }
 .check-item {
   display: flex; flex-direction: column; align-items: center; gap: 5px;
   padding: 9px 4px; border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border); background: var(--card);
-  cursor: pointer; transition: all 0.16s; user-select: none;
-  min-width: 0; /* prevent overflow */
+  cursor: pointer; transition: all 0.16s; user-select: none; min-width: 0;
 }
 .check-item.checked { background: var(--gold-dim); border-color: rgba(245,197,24,0.5); }
 .check-icon {
   width: 28px; height: 28px; border-radius: 8px;
   border: 2px solid rgba(255,255,255,0.12);
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; transition: all 0.16s; background: transparent; color: transparent;
-  flex-shrink: 0;
+  font-size: 15px; transition: all 0.16s; background: transparent; color: transparent; flex-shrink: 0;
 }
 .check-item.checked .check-icon {
   background: var(--gold); border-color: var(--gold);
@@ -305,20 +280,15 @@ button, input, textarea, select { font-family: inherit; }
 }
 .check-label {
   font-size: 9px; font-weight: 600; text-align: center;
-  color: var(--text-muted); line-height: 1.2; letter-spacing: 0.2px;
-  word-break: break-word; width: 100%;
+  color: var(--text-muted); line-height: 1.2; word-break: break-word; width: 100%;
 }
 .check-item.checked .check-label { color: var(--gold); }
 
-/* ===========================
-   PROGRESS BAR
-=========================== */
+/* ── Progress bar ───────────────────────────── */
 .prog-wrap { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.07); overflow: hidden; margin: 6px 0; }
 .prog-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.4s ease; }
 
-/* ===========================
-   NOTES
-=========================== */
+/* ── Notes ──────────────────────────────────── */
 .notes-input {
   width: 100%; padding: 10px 12px;
   background: var(--card); border: 1px solid var(--glass-border);
@@ -328,9 +298,7 @@ button, input, textarea, select { font-family: inherit; }
 .notes-input:focus { border-color: rgba(245,197,24,0.4); }
 .notes-input::placeholder { color: var(--text-muted); }
 
-/* ===========================
-   STATS GRIDS
-=========================== */
+/* ── Stats ──────────────────────────────────── */
 .stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 12px; }
 .stats-grid.c3 { grid-template-columns: repeat(3,1fr); }
 .stats-grid.c4 { grid-template-columns: repeat(4,1fr); }
@@ -345,9 +313,7 @@ button, input, textarea, select { font-family: inherit; }
 }
 .stat-lbl { font-size: 9px; color: var(--text-muted); margin-top: 4px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
 
-/* ===========================
-   LIST ROWS
-=========================== */
+/* ── List rows ──────────────────────────────── */
 .list-row {
   display: flex; justify-content: space-between; align-items: center;
   padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -356,9 +322,7 @@ button, input, textarea, select { font-family: inherit; }
 .list-lbl { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
 .list-val { font-size: 15px; font-weight: 700; color: var(--gold); }
 
-/* ===========================
-   WEEK NAV
-=========================== */
+/* ── Week nav ───────────────────────────────── */
 .week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .wnav-btn {
   width: 38px; height: 38px; border-radius: 50%;
@@ -369,11 +333,9 @@ button, input, textarea, select { font-family: inherit; }
 .wnav-btn:active { background: var(--gold-dim); border-color: var(--gold); }
 .wnav-title { font-size: 14px; font-weight: 700; text-align: center; }
 
-/* ===========================
-   MODAL (bottom sheet)
-=========================== */
+/* ── Modal ──────────────────────────────────── */
 .modal-overlay {
-  display: none; position: fixed; inset: 0; z-index: 200;
+  display: none; position: fixed; inset: 0; z-index: 600;
   background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px); align-items: flex-end;
 }
@@ -383,7 +345,7 @@ button, input, textarea, select { font-family: inherit; }
   background: #131313; border-top: 1px solid var(--gold-border);
   border-radius: 22px 22px 0 0;
   padding: 16px 16px;
-  padding-bottom: max(16px, var(--safe-bottom));
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
   animation: slideUp 0.28s cubic-bezier(.22,.68,0,1.2);
 }
 @keyframes slideUp { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
@@ -398,28 +360,19 @@ button, input, textarea, select { font-family: inherit; }
 .exo-detail { font-size: 11px; color: var(--text-muted); }
 .modal-close { width: 100%; padding: 15px; background: var(--gold); color: var(--black); font-size: 15px; font-weight: 800; border: none; border-radius: var(--radius); cursor: pointer; margin-top: 14px; }
 
-/* ===========================
-   TRAINING LOG — MOBILE FIXED
-=========================== */
-.training-date-selector {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
-}
+/* ── Training log ───────────────────────────── */
+.training-date-selector { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .training-date-selector input[type=date] {
-  flex: 1; padding: 11px 14px;
+  flex: 1; padding: 11px 14px; min-width: 0;
   background: var(--glass); border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm); color: var(--text);
   font-size: 14px; outline: none; color-scheme: dark;
-  min-width: 0; /* critical for mobile overflow fix */
 }
 .training-date-selector input[type=date]:focus { border-color: rgba(245,197,24,0.4); }
+
 .session-picker {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* fixed 3-col to avoid overflow */
+  display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 7px; margin-bottom: 14px;
-}
-/* second row for APH Home */
-.session-picker.has-home {
-  grid-template-columns: repeat(3, 1fr);
 }
 .session-pill {
   padding: 10px 6px;
@@ -430,24 +383,19 @@ button, input, textarea, select { font-family: inherit; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .session-pill.active { background: var(--gold); border-color: var(--gold); color: var(--black); box-shadow: var(--shadow-gold); }
-.session-pill.home-pill { grid-column: 1 / -1; /* full width for APH Home */ }
+.session-pill.home-pill { grid-column: 1 / -1; }
 .session-pill.home-pill.active { background: linear-gradient(135deg,#6B8CFF,#4A6EFF); border-color: #4A6EFF; color: white; box-shadow: 0 0 20px rgba(74,110,255,0.4); }
 
-/* APH Home — custom exercise builder */
-.home-exo-builder { margin-bottom: 16px; }
-.home-exo-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .home-exo-card {
   background: var(--glass); border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm); padding: 10px 12px;
-  position: relative;
+  border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px;
 }
 .home-exo-name-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .home-exo-name-input {
-  flex: 1; padding: 8px 12px;
+  flex: 1; padding: 8px 12px; min-width: 0;
   background: var(--card); border: 1px solid var(--glass-border);
   border-radius: var(--radius-xs); color: var(--text);
   font-size: 13px; font-weight: 700; outline: none;
-  min-width: 0;
 }
 .home-exo-name-input:focus { border-color: rgba(245,197,24,0.4); }
 .home-exo-name-input::placeholder { color: var(--text-muted); font-weight: 400; }
@@ -465,39 +413,31 @@ button, input, textarea, select { font-family: inherit; }
 }
 .add-home-exo-btn:active { background: var(--gold); color: var(--black); }
 
-/* Exercise logger */
 .exo-logger { margin-bottom: 10px; }
 .exo-logger-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .exo-logger-name { font-size: 14px; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; margin-right: 8px; }
 .add-set-btn {
-  font-size: 11px; font-weight: 700;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
   padding: 5px 12px; border-radius: 20px;
   background: var(--gold-dim); border: 1px solid var(--gold-glow);
   color: var(--gold); cursor: pointer; transition: all 0.15s;
-  flex-shrink: 0;
 }
 .add-set-btn:active { background: var(--gold); color: var(--black); }
 .set-rows { display: flex; flex-direction: column; gap: 6px; }
-.set-row {
-  display: grid;
-  grid-template-columns: 28px 1fr 1fr 28px; /* fixed columns, no overflow */
-  gap: 5px; align-items: center;
-}
+.set-row { display: grid; grid-template-columns: 28px 1fr 1fr 28px; gap: 5px; align-items: center; }
 .set-num { font-size: 11px; font-weight: 700; color: var(--text-muted); text-align: center; }
 .set-input {
-  padding: 9px 6px; background: var(--card);
+  padding: 9px 6px; background: var(--card); min-width: 0; width: 100%;
   border: 1px solid var(--glass-border); border-radius: var(--radius-xs);
-  color: var(--text); font-size: 13px; text-align: center; outline: none;
-  transition: border-color 0.15s; min-width: 0; width: 100%;
+  color: var(--text); font-size: 13px; text-align: center; outline: none; transition: border-color 0.15s;
 }
 .set-input:focus { border-color: rgba(245,197,24,0.4); }
 .set-input::placeholder { color: var(--text-muted); font-size: 10px; }
 .del-set-btn {
-  width: 28px; height: 28px; border-radius: 50%;
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
   background: rgba(255,60,60,0.12); border: 1px solid rgba(255,60,60,0.2);
   color: #ff6060; font-size: 14px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
 .del-set-btn:active { background: rgba(255,60,60,0.3); }
 .set-header-row { display: grid; grid-template-columns: 28px 1fr 1fr 28px; gap: 5px; margin-bottom: 4px; }
@@ -505,8 +445,7 @@ button, input, textarea, select { font-family: inherit; }
 .exo-comment {
   width: 100%; margin-top: 6px; padding: 8px 10px;
   background: var(--card); border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xs); color: var(--text);
-  font-size: 12px; resize: none; outline: none;
+  border-radius: var(--radius-xs); color: var(--text); font-size: 12px; resize: none; outline: none;
 }
 .exo-comment::placeholder { color: var(--text-muted); }
 .exo-comment:focus { border-color: rgba(245,197,24,0.3); }
@@ -514,8 +453,7 @@ button, input, textarea, select { font-family: inherit; }
   width: 100%; padding: 15px; margin-top: 16px;
   background: linear-gradient(135deg, var(--gold-light), var(--gold));
   color: var(--black); font-size: 15px; font-weight: 800;
-  border: none; border-radius: var(--radius); cursor: pointer;
-  box-shadow: var(--shadow-gold);
+  border: none; border-radius: var(--radius); cursor: pointer; box-shadow: var(--shadow-gold);
 }
 .save-training-btn:active { opacity: 0.85; }
 .training-log-entry {
@@ -539,22 +477,9 @@ button, input, textarea, select { font-family: inherit; }
   color: #ff6060; cursor: pointer; margin-top: 8px;
 }
 
-/* ===========================
-   CHART (SVG-based)
-=========================== */
+/* ── Charts ─────────────────────────────────── */
 .chart-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .chart-wrap svg { display: block; }
-.chart-select {
-  background: var(--glass); border: 1px solid var(--glass-border);
-  color: var(--text); padding: 9px 12px; border-radius: var(--radius-xs);
-  font-size: 13px; outline: none; width: 100%; margin-bottom: 12px;
-  color-scheme: dark;
-}
-.chart-select:focus { border-color: rgba(245,197,24,0.4); }
-
-/* ===========================
-   EXERCISE SELECTOR (progress)
-=========================== */
 .exo-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .exo-pill {
   padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
@@ -562,21 +487,41 @@ button, input, textarea, select { font-family: inherit; }
   color: var(--text-muted); cursor: pointer; transition: all 0.15s;
 }
 .exo-pill.active { background: var(--gold-dim); border-color: rgba(245,197,24,0.5); color: var(--gold); }
+.compliance-bar-chart { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.compliance-bar-chart svg { display: block; min-width: 100%; }
 
-/* ===========================
-   RING
-=========================== */
-.ring-container { display: flex; flex-direction: column; align-items: center; padding: 10px 0 16px; }
+/* ── Ring ───────────────────────────────────── */
 .ring-wrap { width: 120px; height: 120px; position: relative; margin-bottom: 6px; }
 .ring-wrap svg { transform: rotate(-90deg); }
 .ring-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .ring-pct { font-size: 26px; font-weight: 900; background: linear-gradient(135deg, var(--gold-light), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
 .ring-sub { font-size: 10px; color: var(--text-muted); font-weight: 500; }
-.ring-lbl { font-size: 12px; color: var(--text-muted); }
 
-/* ===========================
-   SEANCES VIEW
-=========================== */
+/* ── Cycle timeline ─────────────────────────── */
+.cycle-timeline { position: relative; padding: 12px 0 4px; }
+.timeline-track {
+  height: 6px; border-radius: 3px; background: rgba(255,255,255,0.07);
+  position: relative; margin: 0 0 14px;
+}
+.timeline-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.5s ease; }
+.timeline-cursor {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--gold); border: 2px solid #080808;
+  box-shadow: 0 0 8px rgba(245,197,24,0.5); pointer-events: none;
+}
+.timeline-labels { display: flex; justify-content: space-between; }
+.timeline-label { font-size: 9px; color: var(--text-muted); font-weight: 600; }
+.timeline-weeks { display: flex; justify-content: space-between; margin-top: 10px; gap: 3px; }
+.timeline-week {
+  flex: 1; text-align: center; padding: 6px 2px;
+  border-radius: var(--radius-xs); font-size: 8px; font-weight: 700;
+  color: var(--text-muted); background: var(--card); border: 1px solid var(--glass-border);
+}
+.timeline-week.current { background: var(--gold-dim); border-color: rgba(245,197,24,0.5); color: var(--gold); }
+.timeline-week.past { background: rgba(255,255,255,0.03); color: rgba(240,240,240,0.3); }
+
+/* ── Seances cards ──────────────────────────── */
 .seance-card {
   background: var(--glass); border: 1px solid var(--glass-border);
   border-radius: var(--radius); overflow: hidden; margin-bottom: 12px;
@@ -587,9 +532,7 @@ button, input, textarea, select { font-family: inherit; }
   background: linear-gradient(135deg, rgba(245,197,24,0.12), rgba(245,197,24,0.04));
   padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
 }
-.seance-card.home-card .seance-card-header {
-  background: linear-gradient(135deg, rgba(74,110,255,0.15), rgba(74,110,255,0.04));
-}
+.seance-card.home-card .seance-card-header { background: linear-gradient(135deg, rgba(74,110,255,0.15), rgba(74,110,255,0.04)); }
 .seance-card-title { font-size: 17px; font-weight: 900; background: linear-gradient(135deg, var(--gold-light), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .seance-card.home-card .seance-card-title { background: linear-gradient(135deg, #8BA4FF, #4A6EFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .seance-card-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
@@ -604,82 +547,35 @@ button, input, textarea, select { font-family: inherit; }
 .sc-exo-name { font-size: 13px; font-weight: 600; }
 .sc-exo-detail { font-size: 12px; color: var(--text-muted); background: var(--card); padding: 2px 8px; border-radius: 20px; border: 1px solid var(--glass-border); }
 
-/* ===========================
-   COMPLIANCE HISTOGRAM
-=========================== */
-.compliance-bar-chart { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.compliance-bar-chart svg { display: block; min-width: 100%; }
-
-/* ===========================
-   CYCLE TIMELINE
-=========================== */
-.cycle-timeline {
-  position: relative; padding: 12px 0 4px;
-}
-.timeline-track {
-  height: 6px; border-radius: 3px; background: rgba(255,255,255,0.07);
-  position: relative; margin: 0 0 8px;
-}
-.timeline-fill {
-  height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--gold), var(--gold-light));
-  transition: width 0.5s ease;
-}
-.timeline-cursor {
-  position: absolute; top: 50%; transform: translate(-50%, -50%);
-  width: 14px; height: 14px; border-radius: 50%;
-  background: var(--gold); border: 2px solid var(--black);
-  box-shadow: 0 0 10px rgba(245,197,24,0.6);
-}
-.timeline-labels { display: flex; justify-content: space-between; }
-.timeline-label { font-size: 9px; color: var(--text-muted); font-weight: 600; }
-.timeline-weeks { display: flex; justify-content: space-between; margin-top: 10px; gap: 3px; }
-.timeline-week {
-  flex: 1; text-align: center; padding: 6px 2px;
-  border-radius: var(--radius-xs); font-size: 8px; font-weight: 700;
-  color: var(--text-muted); background: var(--card); border: 1px solid var(--glass-border);
-  transition: all 0.15s;
-}
-.timeline-week.current { background: var(--gold-dim); border-color: rgba(245,197,24,0.5); color: var(--gold); }
-.timeline-week.past { background: rgba(255,255,255,0.03); color: rgba(240,240,240,0.3); }
-
-/* ===========================
-   ACTIONS
-=========================== */
+/* ── Actions / settings ─────────────────────── */
 .actions-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .action-btn {
   flex: 1; min-width: 100px; padding: 12px;
   border-radius: var(--radius-sm); border: 1px solid var(--glass-border);
   background: var(--glass); color: var(--text); font-size: 12px; font-weight: 600;
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-  transition: all 0.15s;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s;
 }
 .action-btn:active { background: var(--gold-dim); border-color: var(--gold); }
 .action-btn.danger { border-color: rgba(255,60,60,0.25); color: #ff6060; }
 .action-btn.danger:active { background: rgba(255,60,60,0.1); }
-#importFile { display: none; }
-#importFileHeader { display: none; }
+#importFile, #importFileOverlay { display: none; }
 
-/* ===========================
-   TOAST
-=========================== */
+/* ── Toast ──────────────────────────────────── */
 #toast {
   position: fixed;
-  bottom: calc(54px + env(safe-area-inset-bottom, 0px) + 14px);
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 14px);
   left: 50%; transform: translateX(-50%) translateY(60px);
   background: #1c1c1c; border: 1px solid var(--gold-glow);
   color: var(--text); font-size: 13px; font-weight: 600;
-  padding: 11px 22px; border-radius: 22px; z-index: 300;
+  padding: 11px 22px; border-radius: 22px; z-index: 400;
   transition: transform 0.3s ease; white-space: nowrap;
   box-shadow: var(--shadow); pointer-events: none;
 }
 #toast.show { transform: translateX(-50%) translateY(0); }
 
-/* ===========================
-   IMPORT OVERLAY (frictionless)
-=========================== */
+/* ── Import overlay ─────────────────────────── */
 .import-overlay {
-  display: none; position: fixed; inset: 0; z-index: 250;
+  display: none; position: fixed; inset: 0; z-index: 700;
   background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   align-items: center; justify-content: center; padding: 20px;
@@ -697,29 +593,22 @@ button, input, textarea, select { font-family: inherit; }
   padding: 32px 16px; margin-bottom: 16px; cursor: pointer;
   transition: all 0.2s; background: var(--gold-dim);
 }
-.import-drop-zone:hover { border-color: rgba(245,197,24,0.6); background: rgba(245,197,24,0.2); }
 .import-drop-zone.drag-over { border-color: var(--gold); background: rgba(245,197,24,0.25); }
 .import-drop-icon { font-size: 36px; margin-bottom: 8px; }
 .import-drop-text { font-size: 14px; font-weight: 700; color: var(--gold); }
 .import-drop-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 .import-cancel { color: var(--text-muted); font-size: 13px; cursor: pointer; border: none; background: none; padding: 8px; }
 
-/* ===========================
-   PRINT
-=========================== */
+/* ── Print ──────────────────────────────────── */
 @media print {
-  .header, .bottom-nav, .actions-row, .modal-overlay, #toast { display: none !important; }
-  body { background: white; color: black; }
-  .main { padding: 0; max-width: 100%; }
-  .glass-card, .day-card, .gold-card { border: 1px solid #ddd; background: white; backdrop-filter: none; }
+  .header,.bottom-nav,.actions-row,.modal-overlay,#toast { display:none!important; }
+  body { background:white; color:black; }
+  .main { padding:0; max-width:100%; }
+  .glass-card,.day-card,.gold-card { border:1px solid #ddd; background:white; backdrop-filter:none; }
 }
-
-/* ===========================
-   RESPONSIVE
-=========================== */
-@media (min-width: 600px) {
-  .checks-grid { grid-template-columns: repeat(4,1fr); }
-  .stats-grid.c4 { grid-template-columns: repeat(4,1fr); }
+@media (min-width:600px) {
+  .checks-grid { grid-template-columns:repeat(4,1fr); }
+  .stats-grid.c4 { grid-template-columns:repeat(4,1fr); }
 }
 </style>
 </head>
@@ -727,7 +616,6 @@ button, input, textarea, select { font-family: inherit; }
 
 <div class="bg"></div>
 
-<!-- HEADER -->
 <header class="header">
   <div class="hdr-logo">
     <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -736,23 +624,18 @@ button, input, textarea, select { font-family: inherit; }
   </div>
   <div class="hdr-title">
     <h1>AP-H Tracker</h1>
-    <p id="cycleSubtitle">26 Avr → 1 Jul 2026</p>
+    <p>26 Avr → 1 Jul 2026</p>
   </div>
   <div class="hdr-actions">
-    <button class="hdr-import-btn" onclick="openImportOverlay()" title="Importer données">📥</button>
+    <button class="hdr-import-btn" onclick="openImportOverlay()" title="Importer">📥</button>
     <div class="hdr-badge" id="globalBadge">0%</div>
   </div>
 </header>
 
-<!-- MAIN -->
 <main class="main">
 
-  <!-- TODAY -->
-  <div class="view active" id="view-today">
-    <div id="todayContainer"></div>
-  </div>
+  <div class="view active" id="view-today"><div id="todayContainer"></div></div>
 
-  <!-- WEEK -->
   <div class="view" id="view-week">
     <div class="week-nav">
       <button class="wnav-btn" onclick="changeWeek(-1)">‹</button>
@@ -763,19 +646,17 @@ button, input, textarea, select { font-family: inherit; }
     <div id="weekDays"></div>
   </div>
 
-  <!-- SEANCES -->
   <div class="view" id="view-seances">
     <div class="section-label">Tap pour afficher le détail</div>
     <div id="seancesContainer"></div>
   </div>
 
-  <!-- TRAINING LOG -->
   <div class="view" id="view-training">
     <div class="section-label">Nouvelle séance</div>
     <div class="training-date-selector">
       <input type="date" id="trainingDate">
     </div>
-    <div class="session-picker has-home" id="sessionPicker">
+    <div class="session-picker" id="sessionPicker">
       <div class="session-pill active" data-session="APH1" onclick="selectSession('APH1')">APH1</div>
       <div class="session-pill" data-session="APH2" onclick="selectSession('APH2')">APH2</div>
       <div class="session-pill" data-session="APH3" onclick="selectSession('APH3')">APH3</div>
@@ -787,12 +668,8 @@ button, input, textarea, select { font-family: inherit; }
     <div id="trainingHistory"></div>
   </div>
 
-  <!-- PROGRESS -->
-  <div class="view" id="view-progress">
-    <div id="progressContainer"></div>
-  </div>
+  <div class="view" id="view-progress"><div id="progressContainer"></div></div>
 
-  <!-- SETTINGS -->
   <div class="view" id="view-settings">
     <div class="section-label">Données</div>
     <div class="actions-row">
@@ -813,346 +690,225 @@ button, input, textarea, select { font-family: inherit; }
     <div class="glass-card">
       <p style="font-size:13px;color:var(--text-mid);line-height:1.6">
         Safari → <b style="color:var(--gold)">Partager</b> → <b style="color:var(--gold)">Sur l'écran d'accueil</b><br>
-        L'icône flèche dorée s'affichera automatiquement.
+        L'icône plume dorée s'affichera automatiquement.
       </p>
     </div>
   </div>
 
 </main>
 
-<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button class="nav-item active" data-view="today" onclick="switchView('today',this)">
+  <button class="nav-item active" onclick="switchView('today',this)">
     <span class="nav-icon">📅</span>Aujourd'hui
   </button>
-  <button class="nav-item" data-view="week" onclick="switchView('week',this)">
+  <button class="nav-item" onclick="switchView('week',this)">
     <span class="nav-icon">📊</span>Semaine
   </button>
-  <button class="nav-item" data-view="seances" onclick="switchView('seances',this)">
+  <button class="nav-item" onclick="switchView('seances',this)">
     <span class="nav-icon">📋</span>Séances
   </button>
-  <button class="nav-item" data-view="training" onclick="switchView('training',this)">
+  <button class="nav-item" onclick="switchView('training',this)">
     <span class="nav-icon">🏋️</span>Training
   </button>
-  <button class="nav-item" data-view="progress" onclick="switchView('progress',this)">
+  <button class="nav-item" onclick="switchView('progress',this)">
     <span class="nav-icon">📈</span>Progress
   </button>
-  <button class="nav-item" data-view="settings" onclick="switchView('settings',this)">
+  <button class="nav-item" onclick="switchView('settings',this)">
     <span class="nav-icon">⚙️</span>Réglages
   </button>
 </nav>
 
-<!-- SEANCE MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeMod(event)">
-  <div class="modal-sheet" id="modalSheet">
+  <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div id="modalBody"></div>
     <button class="modal-close" onclick="closeMod(null,true)">Fermer</button>
   </div>
 </div>
 
-<!-- IMPORT OVERLAY -->
 <div class="import-overlay" id="importOverlay">
   <div class="import-box">
     <h2>📥 Importer</h2>
-    <p>Importe ton fichier de données APH Tracker pour restaurer ta progression sans friction.</p>
+    <p>Restaure ta progression depuis un fichier exporté précédemment.</p>
     <div class="import-drop-zone" id="dropZone" onclick="document.getElementById('importFileOverlay').click()">
       <div class="import-drop-icon">📂</div>
       <div class="import-drop-text">Tap ou glisse ton fichier ici</div>
       <div class="import-drop-sub">Format .json exporté depuis l'app</div>
     </div>
-    <input type="file" id="importFileOverlay" accept=".json" onchange="importData(event)" style="display:none">
+    <input type="file" id="importFileOverlay" accept=".json" onchange="importData(event)">
     <button class="import-cancel" onclick="closeImportOverlay()">Annuler</button>
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-/* =============================================
-   CONSTANTS & CONFIG
-============================================= */
-const START = new Date(2026,3,26);  // Apr 26
-const END   = new Date(2026,6,1);   // Jul 1
+/* ── Config ───────────────────────────────── */
+const START = new Date(2026,3,26);
+const END   = new Date(2026,6,1);
 const DAYS_FR   = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 
 const CHECK_FIELDS = [
-  { key:'aph1',  label:'APH1',    emoji:'🏋️', group:'session' },
-  { key:'aph2',  label:'APH2',    emoji:'💪',  group:'session' },
-  { key:'aph3',  label:'APH3',    emoji:'🔥',  group:'session' },
-  { key:'aphhome', label:'Home',  emoji:'🏠',  group:'session' },
-  { key:'jjb',   label:'JJB',     emoji:'🥋',  group:'session' },
-  { key:'rest',  label:'Repos',   emoji:'🌿',  group:'session' },
-  { key:'water', label:'Eau 2.5L',emoji:'💧',  group:'habit' },
-  { key:'sleep', label:'Sommeil', emoji:'😴',  group:'habit' },
-  { key:'nutrition',label:'Nutrition',emoji:'🥗',group:'habit' },
-  { key:'supps', label:'Compléments',emoji:'💊',group:'habit' },
+  { key:'aph1',    label:'APH1',    emoji:'🏋️', group:'session' },
+  { key:'aph2',    label:'APH2',    emoji:'💪',  group:'session' },
+  { key:'aph3',    label:'APH3',    emoji:'🔥',  group:'session' },
+  { key:'aphhome', label:'Home',    emoji:'🏠',  group:'session' },
+  { key:'jjb',     label:'JJB',     emoji:'🥋',  group:'session' },
+  { key:'rest',    label:'Repos',   emoji:'🌿',  group:'session' },
+  { key:'water',   label:'Eau 2.5L',emoji:'💧',  group:'habit'   },
+  { key:'sleep',   label:'Sommeil', emoji:'😴',  group:'habit'   },
+  { key:'nutrition',label:'Nutrition',emoji:'🥗',group:'habit'   },
+  { key:'supps',   label:'Compléments',emoji:'💊',group:'habit'  },
 ];
-
-function dayScore(ds) {
-  const d = getDay(ds);
-  const sessionOk = CHECK_FIELDS.filter(f=>f.group==='session').some(f=>d[f.key]);
-  const habitScore = ['water','sleep','nutrition','supps'].filter(k=>d[k]).length;
-  const checked = (sessionOk?1:0) + habitScore;
-  return { checked, total: 5, pct: Math.round(checked/5*100), sessionOk };
-}
-
-const SEANCES_DATA = {
-  APH1: {
-    title:'APH1 – Peak', duration:'80 min', subtitle:'Squat · Tirage · Accessoires',
-    sections:[
-      { title:'Activation', exercises:[
-        {name:'Clamshell band',detail:'2 × 15'},
-        {name:'Ischio machine',detail:'2 × 20'},
-        {name:'Banc à lombaires',detail:'2 × 15'},
-      ]},
-      { title:'Séance Principale', exercises:[
-        {name:'Squat',detail:'4 × 5 @ 90 kg'},
-        {name:'Fentes bulgares',detail:'3 × 8 @ 24 kg KB'},
-        {name:'Tirage poulie',detail:'4 × 12'},
-      ]},
-      { title:'Accessoires', exercises:[
-        {name:'Épaule chevalier servant',detail:'2 × 12 @ 12 kg KB + élastique'},
-      ]},
-      { title:'Finisher', exercises:[
-        {name:'Biceps + Triceps',detail:''},
-      ]},
-    ]
-  },
-  APH2: {
-    title:'APH2 – Peak', duration:'60 min', subtitle:'DC · TRX · Montées genoux',
-    sections:[
-      { title:'Activation', exercises:[
-        {name:'Mountain climber',detail:'2 × 20'},
-        {name:'Rotation épaule + gainage',detail:'2 × 12'},
-        {name:'Pompes sautées',detail:'2 × 5'},
-      ]},
-      { title:'Séance Principale', exercises:[
-        {name:'Développé Couché',detail:'4 × 8'},
-        {name:'DC incliné haltères',detail:'3 × 12'},
-        {name:'Tirage TRX',detail:'4 × 12 tempo'},
-      ]},
-      { title:'Accessoires', exercises:[
-        {name:'Montées genoux suspendu',detail:'3 × 12'},
-      ]},
-      { title:'Finisher', exercises:[
-        {name:'Biceps',detail:''},
-        {name:'Rotation barre',detail:''},
-      ]},
-    ]
-  },
-  APH3: {
-    title:'APH3 – Peak', duration:'60 min', subtitle:'Tractions · Gorilla Row · Gainage',
-    sections:[
-      { title:'Activation', exercises:[
-        {name:'Antirotation élastique',detail:'2 × 12'},
-        {name:'Superman',detail:'2 × 12 @ 1 kg'},
-        {name:'Battle legs',detail:'2 × 20'},
-      ]},
-      { title:'Séance Principale', exercises:[
-        {name:'Tractions',detail:'4 × 8, lesté si possible'},
-        {name:'Gorilla Row KB',detail:'3 × 16'},
-        {name:'Pompes Swiss Ball',detail:'4 × 12'},
-      ]},
-      { title:'Accessoires', exercises:[
-        {name:'Face Pull',detail:'3 × 12'},
-      ]},
-      { title:'Finisher', exercises:[
-        {name:'Biceps & Triceps',detail:''},
-        {name:'Ischio ou Copenhagen plank',detail:''},
-      ]},
-    ]
-  }
-};
 
 const SESSION_EXOS = {
   APH1: ['Squat','Fentes bulgares','Tirage poulie','Épaule chevalier servant','Biceps','Triceps'],
   APH2: ['Développé Couché','DC incliné haltères','Tirage TRX','Montées genoux suspendu','Biceps','Rotation barre'],
   APH3: ['Tractions','Gorilla Row KB','Pompes Swiss Ball','Face Pull','Biceps','Triceps','Ischio/Copenhagen'],
-  APHHOME: [], // dynamic — user defines exercises
+  APHHOME: [],
 };
 
-/* =============================================
-   STATE
-============================================= */
-let DATA = {};
-let TRAININGS = [];
-let weekOffset = 0;
-let currentView = 'today';
-let selectedSession = 'APH1';
-let homeExoCount = 0; // for APH Home dynamic exos
+const SEANCES_DATA = {
+  APH1:{title:'APH1 – Peak',duration:'80 min',subtitle:'Squat · Tirage · Accessoires',sections:[
+    {title:'Activation',exercises:[{name:'Clamshell band',detail:'2 × 15'},{name:'Ischio machine',detail:'2 × 20'},{name:'Banc à lombaires',detail:'2 × 15'}]},
+    {title:'Séance Principale',exercises:[{name:'Squat',detail:'4 × 5 @ 90 kg'},{name:'Fentes bulgares',detail:'3 × 8 @ 24 kg KB'},{name:'Tirage poulie',detail:'4 × 12'}]},
+    {title:'Accessoires',exercises:[{name:'Épaule chevalier servant',detail:'2 × 12 @ 12 kg KB + élastique'}]},
+    {title:'Finisher',exercises:[{name:'Biceps + Triceps',detail:''}]},
+  ]},
+  APH2:{title:'APH2 – Peak',duration:'60 min',subtitle:'DC · TRX · Montées genoux',sections:[
+    {title:'Activation',exercises:[{name:'Mountain climber',detail:'2 × 20'},{name:'Rotation épaule + gainage',detail:'2 × 12'},{name:'Pompes sautées',detail:'2 × 5'}]},
+    {title:'Séance Principale',exercises:[{name:'Développé Couché',detail:'4 × 8'},{name:'DC incliné haltères',detail:'3 × 12'},{name:'Tirage TRX',detail:'4 × 12 tempo'}]},
+    {title:'Accessoires',exercises:[{name:'Montées genoux suspendu',detail:'3 × 12'}]},
+    {title:'Finisher',exercises:[{name:'Biceps',detail:''},{name:'Rotation barre',detail:''}]},
+  ]},
+  APH3:{title:'APH3 – Peak',duration:'60 min',subtitle:'Tractions · Gorilla Row · Gainage',sections:[
+    {title:'Activation',exercises:[{name:'Antirotation élastique',detail:'2 × 12'},{name:'Superman',detail:'2 × 12 @ 1 kg'},{name:'Battle legs',detail:'2 × 20'}]},
+    {title:'Séance Principale',exercises:[{name:'Tractions',detail:'4 × 8, lesté si possible'},{name:'Gorilla Row KB',detail:'3 × 16'},{name:'Pompes Swiss Ball',detail:'4 × 12'}]},
+    {title:'Accessoires',exercises:[{name:'Face Pull',detail:'3 × 12'}]},
+    {title:'Finisher',exercises:[{name:'Biceps & Triceps',detail:''},{name:'Ischio ou Copenhagen plank',detail:''}]},
+  ]},
+};
 
-/* =============================================
-   STORAGE
-============================================= */
-function load() {
-  try { DATA = JSON.parse(localStorage.getItem('aph_data')||'{}'); } catch{ DATA={}; }
-  try { TRAININGS = JSON.parse(localStorage.getItem('aph_trainings')||'[]'); } catch{ TRAININGS=[]; }
+/* ── State ────────────────────────────────── */
+let DATA = {}, TRAININGS = [];
+let weekOffset = 0, currentView = 'today';
+let selectedSession = 'APH1', homeExoCount = 0;
+let selectedProgressExo = null;
+
+/* ── Storage ──────────────────────────────── */
+function load(){
+  try { DATA=JSON.parse(localStorage.getItem('aph_data')||'{}'); } catch{ DATA={}; }
+  try { TRAININGS=JSON.parse(localStorage.getItem('aph_trainings')||'[]'); } catch{ TRAININGS=[]; }
 }
-function save() {
-  localStorage.setItem('aph_data', JSON.stringify(DATA));
-  localStorage.setItem('aph_trainings', JSON.stringify(TRAININGS));
+function save(){
+  localStorage.setItem('aph_data',JSON.stringify(DATA));
+  localStorage.setItem('aph_trainings',JSON.stringify(TRAININGS));
   updateBadge();
 }
-function getDay(ds) {
-  if(!DATA[ds]) DATA[ds]={notes:''};
-  return DATA[ds];
+function getDay(ds){ if(!DATA[ds]) DATA[ds]={notes:''}; return DATA[ds]; }
+
+/* ── Date utils ───────────────────────────── */
+function ds(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function allDates(){ const r=[],d=new Date(START); while(d<=END){r.push(new Date(d));d.setDate(d.getDate()+1);} return r; }
+function isToday(d){ const t=new Date(); return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate(); }
+function fmt(d){ return DAYS_FR[d.getDay()]+' '+d.getDate()+' '+MONTHS_FR[d.getMonth()]; }
+function fmtFull(d){ return d.getDate()+' '+MONTHS_FR[d.getMonth()]+' '+d.getFullYear(); }
+
+/* ── Score ────────────────────────────────── */
+function dayScore(ds){
+  const d=getDay(ds);
+  const sessionOk=CHECK_FIELDS.filter(f=>f.group==='session').some(f=>d[f.key]);
+  const habitScore=['water','sleep','nutrition','supps'].filter(k=>d[k]).length;
+  const checked=(sessionOk?1:0)+habitScore;
+  return {checked,total:5,pct:Math.round(checked/5*100)};
 }
 
-/* =============================================
-   DATE UTILS
-============================================= */
-function ds(d) {
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-function allDates() {
-  const r=[]; const d=new Date(START);
-  while(d<=END){ r.push(new Date(d)); d.setDate(d.getDate()+1); }
-  return r;
-}
-function isToday(d) {
-  const t=new Date();
-  return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate();
-}
-function fmt(d) { return DAYS_FR[d.getDay()]+' '+d.getDate()+' '+MONTHS_FR[d.getMonth()]; }
-function fmtFull(d) { return d.getDate()+' '+MONTHS_FR[d.getMonth()]+' '+d.getFullYear(); }
-
-/* =============================================
-   BADGE
-============================================= */
-function updateBadge() {
-  const dates=allDates();
-  let c=0,t=0;
-  dates.forEach(d=>{ const s=dayScore(ds(d)); c+=s.checked; t+=s.total; });
-  const pct=t>0?Math.round(c/t*100):0;
-  document.getElementById('globalBadge').textContent=pct+'%';
+/* ── Badge ────────────────────────────────── */
+function updateBadge(){
+  const dates=allDates(); let c=0,t=0;
+  dates.forEach(d=>{const s=dayScore(ds(d));c+=s.checked;t+=s.total;});
+  document.getElementById('globalBadge').textContent=(t>0?Math.round(c/t*100):0)+'%';
 }
 
-/* =============================================
-   TOGGLE / NOTE
-============================================= */
-function toggle(dateStr, key) {
+/* ── Toggle ───────────────────────────────── */
+function toggle(dateStr,key){
   const d=getDay(dateStr);
-  const sessionKeys=['aph1','aph2','aph3','aphhome','jjb','rest'];
-  if(sessionKeys.includes(key)) {
-    const was = !!d[key];
-    if(was) { d[key]=false; }
-    else { sessionKeys.forEach(k=>{ d[k]=false; }); d[key]=true; }
-  } else {
-    d[key]=!d[key];
-  }
+  const sk=['aph1','aph2','aph3','aphhome','jjb','rest'];
+  if(sk.includes(key)){
+    if(d[key]){d[key]=false;}
+    else{sk.forEach(k=>{d[k]=false;});d[key]=true;}
+  } else { d[key]=!d[key]; }
   save(); refreshView();
 }
 function setNote(ds,val){ getDay(ds).notes=val; save(); }
 
-/* =============================================
-   RENDER DAY CARD
-============================================= */
-function renderDayCard(date) {
-  const dateStr=ds(date);
-  const d=getDay(dateStr);
-  const score=dayScore(dateStr);
-  const today=isToday(date);
-
-  const sessionFields=CHECK_FIELDS.filter(f=>f.group==='session');
-  const habitFields=CHECK_FIELDS.filter(f=>f.group==='habit');
-
-  let sessionHtml='';
-  sessionFields.forEach(f=>{
-    const checked=!!d[f.key];
-    sessionHtml+=`<div class="check-item ${checked?'checked':''}" onclick="toggle('${dateStr}','${f.key}')">
+/* ── Day card ─────────────────────────────── */
+function renderDayCard(date){
+  const dateStr=ds(date), d=getDay(dateStr), score=dayScore(dateStr), today=isToday(date);
+  const sF=CHECK_FIELDS.filter(f=>f.group==='session');
+  const hF=CHECK_FIELDS.filter(f=>f.group==='habit');
+  const mkItems=(fields)=>fields.map(f=>{
+    const ch=!!d[f.key];
+    return `<div class="check-item ${ch?'checked':''}" onclick="toggle('${dateStr}','${f.key}')">
       <div class="check-icon">✓</div>
       <div class="check-label">${f.emoji}<br>${f.label}</div>
     </div>`;
-  });
-  let habitHtml='';
-  habitFields.forEach(f=>{
-    const checked=!!d[f.key];
-    habitHtml+=`<div class="check-item ${checked?'checked':''}" onclick="toggle('${dateStr}','${f.key}')">
-      <div class="check-icon">✓</div>
-      <div class="check-label">${f.emoji}<br>${f.label}</div>
-    </div>`;
-  });
-
+  }).join('');
   return `<div class="day-card ${today?'today':''}" id="card-${dateStr}">
     <div class="day-header">
-      <div>
-        <div class="day-date">${fmt(date)}</div>
-        ${today?'<span class="today-pill">Aujourd\'hui</span>':''}
-      </div>
+      <div><div class="day-date">${fmt(date)}</div>${today?'<span class="today-pill">Aujourd\'hui</span>':''}</div>
       <div class="day-score"><b>${score.pct}%</b> · ${score.checked}/5</div>
     </div>
     <div class="prog-wrap"><div class="prog-bar" style="width:${score.pct}%"></div></div>
-
     <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:10px 0 6px">Séance du jour (1 seule)</div>
-    <div class="checks-grid" style="grid-template-columns:repeat(3,1fr)">${sessionHtml}</div>
-
+    <div class="checks-grid" style="grid-template-columns:repeat(3,1fr)">${mkItems(sF)}</div>
     <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:10px 0 6px">Habitudes quotidiennes</div>
-    <div class="checks-grid" style="grid-template-columns:repeat(4,1fr)">${habitHtml}</div>
-
+    <div class="checks-grid" style="grid-template-columns:repeat(4,1fr)">${mkItems(hF)}</div>
     <textarea class="notes-input" rows="2" placeholder="Notes du jour..." onchange="setNote('${dateStr}',this.value)">${d.notes||''}</textarea>
   </div>`;
 }
 
-/* =============================================
-   VIEW: TODAY
-============================================= */
-function renderToday() {
+/* ── Today ────────────────────────────────── */
+function renderToday(){
   const c=document.getElementById('todayContainer');
   const today=new Date(); today.setHours(0,0,0,0);
   const inRange=today>=START&&today<=END;
   const target=inRange?today:(today<START?START:END);
-
   let html=inRange?'':
     `<div class="gold-card" style="text-align:center;padding:20px 16px">
       <div style="font-size:28px;margin-bottom:6px">📅</div>
       <div style="font-weight:800;font-size:15px">Cycle ${today<START?'commence le 26 avril':'terminé'}</div>
     </div>`;
-
   html+=renderDayCard(target);
-
   if(inRange){
-    const tomorrow=new Date(today); tomorrow.setDate(today.getDate()+1);
-    if(tomorrow<=END){
-      html+=`<div class="section-label">Demain</div>`+renderDayCard(tomorrow);
-    }
+    const tom=new Date(today); tom.setDate(today.getDate()+1);
+    if(tom<=END) html+=`<div class="section-label">Demain</div>`+renderDayCard(tom);
   }
   c.innerHTML=html;
 }
 
-/* =============================================
-   VIEW: WEEK
-============================================= */
-function getWeekStart(offset) {
+/* ── Week ─────────────────────────────────── */
+function getWeekStart(off){
   const today=new Date(); today.setHours(0,0,0,0);
-  const dow=today.getDay();
-  const mon=new Date(today);
-  mon.setDate(today.getDate()-(dow===0?6:dow-1)+offset*7);
+  const dow=today.getDay(), mon=new Date(today);
+  mon.setDate(today.getDate()-(dow===0?6:dow-1)+off*7);
   return mon;
 }
-function renderWeek() {
-  const ws=getWeekStart(weekOffset);
-  const we=new Date(ws); we.setDate(ws.getDate()+6);
+function renderWeek(){
+  const ws=getWeekStart(weekOffset), we=new Date(ws); we.setDate(ws.getDate()+6);
   document.getElementById('weekTitle').textContent=`${ws.getDate()} ${MONTHS_FR[ws.getMonth()]} – ${we.getDate()} ${MONTHS_FR[we.getMonth()]}`;
-
-  let tc=0,tt=0,aph=0,jjb=0,inCycle=0;
-  let daysHtml='';
+  let tc=0,tt=0,aph=0,jjb=0,inCycle=0,daysHtml='';
   for(let i=0;i<7;i++){
     const d=new Date(ws); d.setDate(ws.getDate()+i);
-    if(d<START||d>END) continue;
-    inCycle++;
-    const dateStr=ds(d);
-    const dd=getDay(dateStr);
-    const s=dayScore(dateStr);
+    if(d<START||d>END) continue; inCycle++;
+    const ds2=ds(d), dd=getDay(ds2), s=dayScore(ds2);
     tc+=s.checked; tt+=s.total;
     if(dd.aph1||dd.aph2||dd.aph3||dd.aphhome) aph++;
     if(dd.jjb) jjb++;
     daysHtml+=renderDayCard(d);
   }
   const pct=tt>0?Math.round(tc/tt*100):0;
-
   document.getElementById('weekStats').innerHTML=`
     <div class="gold-card">
       <div class="card-title">Score Semaine</div>
@@ -1169,83 +925,58 @@ function renderWeek() {
 }
 function changeWeek(dir){ weekOffset+=dir; renderWeek(); }
 
-/* =============================================
-   VIEW: SEANCES
-============================================= */
-function renderSeances() {
+/* ── Séances ──────────────────────────────── */
+function renderSeances(){
   const c=document.getElementById('seancesContainer');
   let html='';
   Object.entries(SEANCES_DATA).forEach(([key,s])=>{
     let sectHtml='';
     s.sections.forEach(sec=>{
-      let exoHtml='';
+      let eH='';
       sec.exercises.forEach(e=>{
-        exoHtml+=`<div class="sc-exo">
-          <div class="sc-exo-name">${e.name}</div>
-          ${e.detail?`<div class="sc-exo-detail">${e.detail}</div>`:''}
-        </div>`;
+        eH+=`<div class="sc-exo"><div class="sc-exo-name">${e.name}</div>${e.detail?`<div class="sc-exo-detail">${e.detail}</div>`:''}</div>`;
       });
-      sectHtml+=`<div class="sc-section"><div class="sc-section-title">${sec.title}</div>${exoHtml}</div>`;
+      sectHtml+=`<div class="sc-section"><div class="sc-section-title">${sec.title}</div>${eH}</div>`;
     });
     html+=`<div class="seance-card" id="sc-${key}" onclick="toggleSeanceCard('${key}')">
       <div class="seance-card-header">
-        <div>
-          <div class="seance-card-title">${s.title}</div>
-          <div class="seance-card-meta">⏱ ${s.duration} · ${s.subtitle}</div>
-        </div>
+        <div><div class="seance-card-title">${s.title}</div><div class="seance-card-meta">⏱ ${s.duration} · ${s.subtitle}</div></div>
         <div class="seance-card-expand">›</div>
       </div>
       <div class="seance-card-body">${sectHtml}</div>
     </div>`;
   });
-  // APH Home info card
   html+=`<div class="seance-card home-card" id="sc-APHHOME" onclick="toggleSeanceCard('APHHOME')">
     <div class="seance-card-header">
-      <div>
-        <div class="seance-card-title">APH Home</div>
-        <div class="seance-card-meta">🏠 Entraînement custom à domicile</div>
-      </div>
+      <div><div class="seance-card-title">APH Home</div><div class="seance-card-meta">🏠 Entraînement custom à domicile</div></div>
       <div class="seance-card-expand">›</div>
     </div>
     <div class="seance-card-body">
       <div class="sc-section">
         <div class="sc-section-title">Comment ça marche</div>
         <div style="font-size:13px;color:var(--text-mid);line-height:1.6;padding:4px 0">
-          Dans l'onglet Training, sélectionne <b style="color:#8BA4FF">APH Home</b>, puis ajoute librement tes exercices, séries et charges.<br><br>
-          Tes sessions home sont loguées dans l'historique et intégrées dans les stats de progression.
+          Dans l'onglet Training, sélectionne <b style="color:#8BA4FF">APH Home</b>, puis ajoute librement tes exercices, séries et charges.
         </div>
       </div>
     </div>
   </div>`;
   c.innerHTML=html;
 }
-function toggleSeanceCard(key){
-  const el=document.getElementById('sc-'+key);
-  if(el) el.classList.toggle('expanded');
-}
+function toggleSeanceCard(key){ const el=document.getElementById('sc-'+key); if(el) el.classList.toggle('expanded'); }
 
-/* =============================================
-   VIEW: TRAINING LOG
-============================================= */
+/* ── Training ─────────────────────────────── */
 function initTrainingDate(){
   const inp=document.getElementById('trainingDate');
-  const today=new Date();
-  inp.value=ds(today);
-  inp.max=ds(END); inp.min=ds(START);
+  inp.value=ds(new Date()); inp.max=ds(END); inp.min=ds(START);
 }
 function selectSession(s){
   selectedSession=s;
-  document.querySelectorAll('.session-pill').forEach(p=>{
-    p.classList.toggle('active',p.dataset.session===s);
-  });
+  document.querySelectorAll('.session-pill').forEach(p=>p.classList.toggle('active',p.dataset.session===s));
   renderTrainingExos();
 }
 function renderTrainingExos(){
   const container=document.getElementById('trainingExos');
-  if(selectedSession==='APHHOME'){
-    renderHomeExos();
-    return;
-  }
+  if(selectedSession==='APHHOME'){ renderHomeExos(); return; }
   const exos=SESSION_EXOS[selectedSession]||[];
   let html='';
   exos.forEach((exo,ei)=>{
@@ -1255,10 +986,7 @@ function renderTrainingExos(){
         <button class="add-set-btn" onclick="addSet(${ei})">+ Série</button>
       </div>
       <div class="set-header-row">
-        <div class="set-col-lbl">Série</div>
-        <div class="set-col-lbl">Poids (kg)</div>
-        <div class="set-col-lbl">Reps</div>
-        <div class="set-col-lbl"></div>
+        <div class="set-col-lbl">Série</div><div class="set-col-lbl">Poids (kg)</div><div class="set-col-lbl">Reps</div><div class="set-col-lbl"></div>
       </div>
       <div class="set-rows" id="sets-${ei}"></div>
       <textarea class="exo-comment" rows="1" id="comment-${ei}" placeholder="Commentaire..."></textarea>
@@ -1267,154 +995,112 @@ function renderTrainingExos(){
   container.innerHTML=html;
   exos.forEach((_,ei)=>addSet(ei));
 }
-
-/* APH HOME: dynamic exercise builder */
 function renderHomeExos(){
-  const container=document.getElementById('trainingExos');
   homeExoCount=0;
-  container.innerHTML=`<div class="home-exo-builder">
-    <div class="home-exo-list" id="homeExoList"></div>
-    <button class="add-home-exo-btn" onclick="addHomeExo()">+ Ajouter un exercice</button>
-  </div>`;
-  addHomeExo(); // start with 1
+  document.getElementById('trainingExos').innerHTML=`
+    <div class="home-exo-builder">
+      <div id="homeExoList"></div>
+      <button class="add-home-exo-btn" onclick="addHomeExo()">+ Ajouter un exercice</button>
+    </div>`;
+  addHomeExo();
 }
 function addHomeExo(){
-  const list=document.getElementById('homeExoList');
-  if(!list) return;
+  const list=document.getElementById('homeExoList'); if(!list) return;
   const ei=homeExoCount++;
   const div=document.createElement('div');
-  div.className='home-exo-card';
-  div.id=`home-exo-${ei}`;
+  div.className='home-exo-card'; div.id=`home-exo-${ei}`;
   div.innerHTML=`
     <div class="home-exo-name-row">
       <input class="home-exo-name-input" type="text" placeholder="Nom de l'exercice..." id="home-exo-name-${ei}">
       <button class="del-exo-btn" onclick="document.getElementById('home-exo-${ei}').remove()">×</button>
     </div>
     <div class="set-header-row">
-      <div class="set-col-lbl">Série</div>
-      <div class="set-col-lbl">Poids (kg)</div>
-      <div class="set-col-lbl">Reps</div>
-      <div class="set-col-lbl"></div>
+      <div class="set-col-lbl">Série</div><div class="set-col-lbl">Poids (kg)</div><div class="set-col-lbl">Reps</div><div class="set-col-lbl"></div>
     </div>
     <div class="set-rows" id="home-sets-${ei}"></div>
-    <button class="add-set-btn" style="margin-top:8px;font-size:10px" onclick="addHomeSet(${ei})">+ Série</button>
-  `;
+    <button class="add-set-btn" style="margin-top:8px;font-size:10px" onclick="addHomeSet(${ei})">+ Série</button>`;
   list.appendChild(div);
   addHomeSet(ei);
 }
 function addHomeSet(ei){
-  const container=document.getElementById('home-sets-'+ei);
-  if(!container) return;
-  const idx=container.children.length+1;
-  const row=document.createElement('div');
+  const c=document.getElementById('home-sets-'+ei); if(!c) return;
+  const idx=c.children.length+1, row=document.createElement('div');
   row.className='set-row';
-  row.innerHTML=`
-    <div class="set-num">${idx}</div>
+  row.innerHTML=`<div class="set-num">${idx}</div>
     <input class="set-input" type="number" placeholder="kg" step="0.5" min="0">
     <input class="set-input" type="number" placeholder="reps" min="0">
     <button class="del-set-btn" onclick="this.parentElement.remove();renumberHomeSets(${ei})">×</button>`;
-  container.appendChild(row);
+  c.appendChild(row);
 }
 function renumberHomeSets(ei){
-  const rows=document.querySelectorAll(`#home-sets-${ei} .set-row`);
-  rows.forEach((r,i)=>{ const n=r.querySelector('.set-num'); if(n) n.textContent=i+1; });
+  document.querySelectorAll(`#home-sets-${ei} .set-row`).forEach((r,i)=>{const n=r.querySelector('.set-num');if(n)n.textContent=i+1;});
 }
-
 function addSet(ei){
-  const container=document.getElementById('sets-'+ei);
-  if(!container) return;
-  const idx=container.children.length+1;
-  const row=document.createElement('div');
+  const c=document.getElementById('sets-'+ei); if(!c) return;
+  const idx=c.children.length+1, row=document.createElement('div');
   row.className='set-row';
-  row.innerHTML=`
-    <div class="set-num">${idx}</div>
+  row.innerHTML=`<div class="set-num">${idx}</div>
     <input class="set-input" type="number" placeholder="kg" step="0.5" min="0">
     <input class="set-input" type="number" placeholder="reps" min="0">
     <button class="del-set-btn" onclick="this.parentElement.remove();renumberSets(${ei})">×</button>`;
-  container.appendChild(row);
+  c.appendChild(row);
 }
 function renumberSets(ei){
-  const rows=document.querySelectorAll(`#sets-${ei} .set-row`);
-  rows.forEach((r,i)=>{ const n=r.querySelector('.set-num'); if(n) n.textContent=i+1; });
+  document.querySelectorAll(`#sets-${ei} .set-row`).forEach((r,i)=>{const n=r.querySelector('.set-num');if(n)n.textContent=i+1;});
 }
-
 function saveTraining(){
   const dateVal=document.getElementById('trainingDate').value;
-  if(!dateVal){ showToast('⚠️ Sélectionne une date'); return; }
-
+  if(!dateVal){showToast('⚠️ Sélectionne une date');return;}
   let exercises=[];
   if(selectedSession==='APHHOME'){
-    // Collect from dynamic home exos
-    const cards=document.querySelectorAll('#homeExoList .home-exo-card');
-    cards.forEach(card=>{
-      const idMatch=card.id.match(/home-exo-(\d+)/);
-      if(!idMatch) return;
-      const ei=idMatch[1];
-      const nameEl=document.getElementById('home-exo-name-'+ei);
-      const name=(nameEl?.value||'').trim()||'Exercice';
-      const sets=[...document.querySelectorAll(`#home-sets-${ei} .set-row`)].map(row=>{
-        const inputs=row.querySelectorAll('input');
-        return { weight: inputs[0]?.value||'', reps: inputs[1]?.value||'' };
+    document.querySelectorAll('#homeExoList .home-exo-card').forEach(card=>{
+      const m=card.id.match(/home-exo-(\d+)/); if(!m) return;
+      const ei=m[1];
+      const name=(document.getElementById('home-exo-name-'+ei)?.value||'').trim()||'Exercice';
+      const sets=[...document.querySelectorAll(`#home-sets-${ei} .set-row`)].map(r=>{
+        const inp=r.querySelectorAll('input');
+        return {weight:inp[0]?.value||'',reps:inp[1]?.value||''};
       }).filter(s=>s.reps||s.weight);
-      exercises.push({ name, sets, comment:'' });
+      exercises.push({name,sets,comment:''});
     });
-    if(!exercises.length){ showToast('⚠️ Ajoute au moins un exercice'); return; }
+    if(!exercises.length){showToast('⚠️ Ajoute au moins un exercice');return;}
   } else {
-    const exos=SESSION_EXOS[selectedSession]||[];
-    exercises=exos.map((exo,ei)=>{
-      const sets=[...document.querySelectorAll(`#sets-${ei} .set-row`)].map(row=>{
-        const inputs=row.querySelectorAll('input');
-        return { weight: inputs[0]?.value||'', reps: inputs[1]?.value||'' };
+    exercises=(SESSION_EXOS[selectedSession]||[]).map((exo,ei)=>{
+      const sets=[...document.querySelectorAll(`#sets-${ei} .set-row`)].map(r=>{
+        const inp=r.querySelectorAll('input');
+        return {weight:inp[0]?.value||'',reps:inp[1]?.value||''};
       }).filter(s=>s.reps||s.weight);
-      const comment=document.getElementById('comment-'+ei)?.value||'';
-      return { name:exo, sets, comment };
+      return {name:exo,sets,comment:document.getElementById('comment-'+ei)?.value||''};
     });
   }
-
-  const entry={ id:Date.now(), date:dateVal, session:selectedSession, exercises };
-  TRAININGS.unshift(entry);
-  save();
-  renderTrainingHistory();
-  showToast('✅ Séance sauvegardée !');
-  renderTrainingExos();
+  TRAININGS.unshift({id:Date.now(),date:dateVal,session:selectedSession,exercises});
+  save(); renderTrainingHistory(); showToast('✅ Séance sauvegardée !'); renderTrainingExos();
 }
-
 function renderTrainingHistory(){
   const c=document.getElementById('trainingHistory');
-  if(!TRAININGS.length){ c.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-muted)">Aucune séance enregistrée</div>'; return; }
-  let html='';
-  TRAININGS.slice(0,30).forEach(t=>{
+  if(!TRAININGS.length){c.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-muted)">Aucune séance enregistrée</div>';return;}
+  c.innerHTML=TRAININGS.slice(0,30).map(t=>{
     const totalSets=t.exercises.reduce((a,e)=>a+e.sets.length,0);
-    const maxWeight=t.exercises.reduce((mx,e)=>{
-      e.sets.forEach(s=>{ const w=parseFloat(s.weight); if(!isNaN(w)&&w>mx) mx=w; });
-      return mx;
-    },0);
+    const maxW=t.exercises.reduce((mx,e)=>{e.sets.forEach(s=>{const w=parseFloat(s.weight);if(!isNaN(w)&&w>mx)mx=w;});return mx;},0);
     const isHome=t.session==='APHHOME';
-    const sessionLabel=isHome?'APH Home':t.session;
-    html+=`<div class="training-log-entry" onclick="viewTraining(${t.id})">
+    return `<div class="training-log-entry" onclick="viewTraining(${t.id})">
       <div class="log-entry-header">
         <div class="log-entry-date">${fmtFull(new Date(t.date+'T00:00:00'))}</div>
-        <div class="log-entry-session ${isHome?'home-session':''}">${sessionLabel}</div>
+        <div class="log-entry-session ${isHome?'home-session':''}">${isHome?'APH Home':t.session}</div>
       </div>
-      <div class="log-entry-summary">${totalSets} séries · Max ${maxWeight>0?maxWeight+'kg':'—'} · ${t.exercises.filter(e=>e.sets.length).length} exo(s)</div>
+      <div class="log-entry-summary">${totalSets} séries · Max ${maxW>0?maxW+'kg':'—'} · ${t.exercises.filter(e=>e.sets.length).length} exo(s)</div>
       <button class="delete-log-btn" onclick="event.stopPropagation();deleteTraining(${t.id})">🗑 Supprimer</button>
     </div>`;
-  });
-  c.innerHTML=html;
+  }).join('');
 }
 function viewTraining(id){
   const t=TRAININGS.find(x=>x.id===id); if(!t) return;
-  const isHome=t.session==='APHHOME';
-  let html=`<div class="modal-title">${isHome?'APH Home':t.session} – ${fmtFull(new Date(t.date+'T00:00:00'))}</div>`;
+  let html=`<div class="modal-title">${t.session==='APHHOME'?'APH Home':t.session} – ${fmtFull(new Date(t.date+'T00:00:00'))}</div>`;
   t.exercises.forEach(e=>{
     if(!e.sets.length&&!e.comment) return;
-    html+=`<div class="seance-section">
-      <div class="seance-sec-title">${e.name}</div>`;
+    html+=`<div class="seance-section"><div class="seance-sec-title">${e.name}</div>`;
     e.sets.forEach((s,i)=>{
-      html+=`<div class="exo-row">
-        <div class="exo-name">Série ${i+1}</div>
-        <div class="exo-detail">${s.weight?s.weight+'kg ':''} ${s.reps?s.reps+' reps':''}</div>
-      </div>`;
+      html+=`<div class="exo-row"><div class="exo-name">Série ${i+1}</div><div class="exo-detail">${s.weight?s.weight+'kg ':''} ${s.reps?s.reps+' reps':''}</div></div>`;
     });
     if(e.comment) html+=`<div style="font-size:12px;color:var(--text-muted);padding:6px 0;font-style:italic">💬 ${e.comment}</div>`;
     html+='</div>';
@@ -1425,27 +1111,18 @@ function viewTraining(id){
 function deleteTraining(id){
   if(!confirm('Supprimer cette séance ?')) return;
   TRAININGS=TRAININGS.filter(t=>t.id!==id);
-  save();
-  renderTrainingHistory();
-  showToast('🗑 Séance supprimée');
+  save(); renderTrainingHistory(); showToast('🗑 Séance supprimée');
 }
 
-/* =============================================
-   VIEW: PROGRESS
-============================================= */
-let selectedProgressExo = null;
-
+/* ── Progress ─────────────────────────────── */
 function renderProgress(){
   const c=document.getElementById('progressContainer');
-  const dates=allDates();
-  const today=new Date(); today.setHours(0,0,0,0);
-  let totalDays=dates.length, elapsed=0;
+  const dates=allDates(), today=new Date(); today.setHours(0,0,0,0);
+  let totalDays=dates.length,elapsed=0;
   let tc=0,tt=0,aph1=0,aph2=0,aph3=0,aphHome=0,jjb=0,rest=0,water=0,sleep=0,nutrition=0,supps=0;
   dates.forEach(d=>{
     if(d<=today) elapsed++;
-    const dateStr=ds(d);
-    const dd=getDay(dateStr);
-    const s=dayScore(dateStr);
+    const ds2=ds(d), dd=getDay(ds2), s=dayScore(ds2);
     tc+=s.checked; tt+=s.total;
     if(dd.aph1)aph1++; if(dd.aph2)aph2++; if(dd.aph3)aph3++;
     if(dd.aphhome)aphHome++;
@@ -1455,31 +1132,14 @@ function renderProgress(){
   });
   const pct=tt>0?Math.round(tc/tt*100):0;
   const cyclePct=Math.round(elapsed/totalDays*100);
-  const circ=2*Math.PI*52;
-  const off=circ*(1-pct/100);
+  const circ=2*Math.PI*52, off=circ*(1-pct/100);
 
-  // Exercise stats
   const exoStats={};
-  TRAININGS.forEach(t=>{
-    t.exercises.forEach(e=>{
-      if(!exoStats[e.name]) exoStats[e.name]={ maxWeight:0, totalSets:0, sessions:0 };
-      exoStats[e.name].sessions++;
-      e.sets.forEach(s=>{
-        exoStats[e.name].totalSets++;
-        const w=parseFloat(s.weight);
-        if(!isNaN(w)&&w>exoStats[e.name].maxWeight) exoStats[e.name].maxWeight=w;
-      });
-    });
-  });
-
-  // Compliance histogram
-  const histogramHtml=buildComplianceHistogram(dates,today);
-
-  // Cycle timeline
-  const timelineHtml=buildCycleTimeline(dates,today,elapsed,totalDays,cyclePct);
-
-  // Weight progression (per exercise selector)
-  const weightProgressHtml=buildWeightChartSection();
+  TRAININGS.forEach(t=>t.exercises.forEach(e=>{
+    if(!exoStats[e.name]) exoStats[e.name]={maxWeight:0,totalSets:0,sessions:0};
+    exoStats[e.name].sessions++;
+    e.sets.forEach(s=>{ exoStats[e.name].totalSets++; const w=parseFloat(s.weight); if(!isNaN(w)&&w>exoStats[e.name].maxWeight) exoStats[e.name].maxWeight=w; });
+  }));
 
   c.innerHTML=`
     <div class="gold-card">
@@ -1488,9 +1148,9 @@ function renderProgress(){
         <div class="ring-wrap">
           <svg viewBox="0 0 120 120" width="120" height="120">
             <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="9"/>
-            <circle cx="60" cy="60" r="52" fill="none" stroke="url(#gGrad)" stroke-width="9"
+            <circle cx="60" cy="60" r="52" fill="none" stroke="url(#gG)" stroke-width="9"
               stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="round"/>
-            <defs><linearGradient id="gGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <defs><linearGradient id="gG" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stop-color="#FFD94A"/><stop offset="100%" stop-color="#F5C518"/>
             </linearGradient></defs>
           </svg>
@@ -1504,15 +1164,13 @@ function renderProgress(){
     </div>
 
     <div class="section-label">Timeline du Cycle</div>
-    <div class="glass-card">${timelineHtml}</div>
+    <div class="glass-card" style="overflow:hidden">${buildCycleTimeline(dates,today,elapsed,totalDays,cyclePct)}</div>
 
     <div class="section-label">Compliance Jour par Jour</div>
-    <div class="glass-card" style="padding:12px">
-      ${histogramHtml}
-    </div>
+    <div class="glass-card" style="padding:12px">${buildComplianceHistogram(dates,today)}</div>
 
     <div class="section-label">Séances</div>
-    <div class="stats-grid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="stats-grid">
       <div class="stat-card"><div class="stat-val">${aph1}</div><div class="stat-lbl">APH1</div></div>
       <div class="stat-card"><div class="stat-val">${aph2}</div><div class="stat-lbl">APH2</div></div>
       <div class="stat-card"><div class="stat-val">${aph3}</div><div class="stat-lbl">APH3</div></div>
@@ -1523,109 +1181,66 @@ function renderProgress(){
 
     <div class="section-label">Habitudes</div>
     <div class="glass-card">
-      ${listRow('💧','Hydratation OK',water,elapsed)}
-      ${listRow('😴','Sommeil OK',sleep,elapsed)}
-      ${listRow('🥗','Nutrition OK',nutrition,elapsed)}
-      ${listRow('💊','Compléments OK',supps,elapsed)}
+      ${listRow('💧','Hydratation',water,elapsed)}
+      ${listRow('😴','Sommeil',sleep,elapsed)}
+      ${listRow('🥗','Nutrition',nutrition,elapsed)}
+      ${listRow('💊','Compléments',supps,elapsed)}
       ${listRow('🌿','Jours repos',rest,elapsed)}
     </div>
 
-    ${weightProgressHtml}
+    ${buildWeightChartSection()}
 
     ${Object.keys(exoStats).length?`
     <div class="section-label">Records par exercice</div>
     <div class="glass-card">
-      ${Object.entries(exoStats).sort((a,b)=>b[1].maxWeight-a[1].maxWeight).map(([name,s])=>
-        `<div class="list-row">
+      ${Object.entries(exoStats).sort((a,b)=>b[1].maxWeight-a[1].maxWeight).map(([name,s])=>`
+        <div class="list-row">
           <div class="list-lbl" style="font-size:12px">${name}</div>
           <div style="text-align:right">
             <div style="font-size:14px;font-weight:700;color:var(--gold)">${s.maxWeight>0?s.maxWeight+'kg':'—'}</div>
             <div style="font-size:10px;color:var(--text-muted)">${s.totalSets} séries · ${s.sessions} log</div>
           </div>
-        </div>`
-      ).join('')}
+        </div>`).join('')}
     </div>`:''}
   `;
 }
 
-/* =============================================
-   COMPLIANCE HISTOGRAM (bar chart SVG)
-============================================= */
-function buildComplianceHistogram(dates, today) {
-  const pastDates = dates.filter(d => d <= today);
-  if(!pastDates.length) return '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px">Pas encore de données</div>';
-
-  // Show last N days that have elapsed
-  const showDates = pastDates.slice(-42); // max 42 bars
-  const n = showDates.length;
-  const W = 320, H = 110, PL = 0, PR = 0, PT = 14, PB = 22;
-  const barW = Math.max(2, Math.floor((W - PL - PR) / n) - 1);
-  const gap = Math.floor((W - PL - PR) / n);
-  const chartH = H - PT - PB;
-
-  let bars = '';
-  let xLabels = '';
-
-  showDates.forEach((d, i) => {
-    const dateStr = ds(d);
-    const s = dayScore(dateStr);
-    const barH = Math.max(2, Math.round(chartH * s.pct / 100));
-    const x = PL + i * gap;
-    const y = PT + chartH - barH;
-    const pct = s.pct;
-
-    // Color gradient based on compliance
-    let fill;
-    if(pct >= 80) fill = 'var(--gold)';
-    else if(pct >= 60) fill = 'rgba(245,197,24,0.7)';
-    else if(pct >= 40) fill = 'rgba(245,197,24,0.45)';
-    else if(pct > 0) fill = 'rgba(245,197,24,0.25)';
-    else fill = 'rgba(255,255,255,0.06)';
-
-    bars += `<rect x="${x}" y="${y}" width="${Math.max(barW,2)}" height="${barH}" fill="${fill}" rx="2"/>`;
-
-    // Show date label every 7 days or at start/end
-    if(i === 0 || i === n-1 || (n > 7 && i % 7 === 0)) {
-      const label = `${d.getDate()}/${d.getMonth()+1}`;
-      xLabels += `<text x="${x + barW/2}" y="${H-4}" text-anchor="middle" fill="rgba(240,240,240,0.35)" font-size="8">${label}</text>`;
+function buildComplianceHistogram(dates,today){
+  const past=dates.filter(d=>d<=today);
+  if(!past.length) return '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px">Pas encore de données</div>';
+  const show=past.slice(-42), n=show.length;
+  const W=320,H=110,PT=14,PB=22,chartH=H-PT-PB;
+  const gap=Math.floor(W/n), barW=Math.max(2,gap-1);
+  let bars='',xLabels='';
+  show.forEach((d,i)=>{
+    const s=dayScore(ds(d)), barH=Math.max(2,Math.round(chartH*s.pct/100));
+    const x=i*gap, y=PT+chartH-barH;
+    const fill=s.pct>=80?'var(--gold)':s.pct>=60?'rgba(245,197,24,0.7)':s.pct>=40?'rgba(245,197,24,0.45)':s.pct>0?'rgba(245,197,24,0.25)':'rgba(255,255,255,0.06)';
+    bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${fill}" rx="2"/>`;
+    if(i===0||i===n-1||i%7===0){
+      xLabels+=`<text x="${x+barW/2}" y="${H-4}" text-anchor="middle" fill="rgba(240,240,240,0.35)" font-size="8">${d.getDate()}/${d.getMonth()+1}</text>`;
     }
   });
-
-  // Horizontal guide lines
-  let guides = '';
-  [0,50,100].forEach(pct => {
-    const y = PT + chartH - Math.round(chartH * pct / 100);
-    guides += `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
-    if(pct > 0) guides += `<text x="${W-PR-2}" y="${y-2}" text-anchor="end" fill="rgba(240,240,240,0.2)" font-size="8">${pct}%</text>`;
+  let guides='';
+  [50,100].forEach(pct=>{
+    const y=PT+chartH-Math.round(chartH*pct/100);
+    guides+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+    guides+=`<text x="${W-2}" y="${y-2}" text-anchor="end" fill="rgba(240,240,240,0.2)" font-size="8">${pct}%</text>`;
   });
-
   return `<div class="compliance-bar-chart">
-    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="height:${H}px">
-      ${guides}
-      ${bars}
-      ${xLabels}
+    <svg viewBox="0 0 ${W} ${H}" width="100%" style="height:${H}px" preserveAspectRatio="none">
+      ${guides}${bars}${xLabels}
     </svg>
   </div>`;
 }
 
-/* =============================================
-   CYCLE TIMELINE
-============================================= */
-function buildCycleTimeline(dates, today, elapsed, totalDays, cyclePct) {
-  // Week segments
-  const totalWeeks = Math.ceil(totalDays / 7);
-  const currentWeekNum = Math.floor(elapsed / 7);
-
-  let weeksHtml = '';
-  for(let w = 0; w < totalWeeks; w++) {
-    const isPast = w < currentWeekNum;
-    const isCurrent = w === currentWeekNum;
-    const weekStart = new Date(START);
-    weekStart.setDate(START.getDate() + w * 7);
-    const label = `S${w+1}`;
-    weeksHtml += `<div class="timeline-week ${isPast?'past':''} ${isCurrent?'current':''}">${label}</div>`;
-  }
-
+function buildCycleTimeline(dates,today,elapsed,totalDays,cyclePct){
+  const totalWeeks=Math.ceil(totalDays/7);
+  const currentWeekNum=Math.floor(elapsed/7);
+  const weeks=Array.from({length:totalWeeks},(_,w)=>{
+    const isPast=w<currentWeekNum, isCurrent=w===currentWeekNum;
+    return `<div class="timeline-week ${isPast?'past':''} ${isCurrent?'current':''}">S${w+1}</div>`;
+  }).join('');
   return `
     <div class="cycle-timeline">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1634,127 +1249,77 @@ function buildCycleTimeline(dates, today, elapsed, totalDays, cyclePct) {
       </div>
       <div class="timeline-track">
         <div class="timeline-fill" style="width:${cyclePct}%"></div>
-        <div class="timeline-cursor" style="left:${Math.min(cyclePct,98)}%"></div>
+        <div class="timeline-cursor" style="left:${Math.min(Math.max(cyclePct,1),99)}%"></div>
       </div>
       <div class="timeline-labels">
         <span class="timeline-label">26 Avr</span>
         <span class="timeline-label" style="color:var(--gold)">Aujourd'hui</span>
         <span class="timeline-label">1 Jul</span>
       </div>
-      <div class="timeline-weeks">${weeksHtml}</div>
+      <div class="timeline-weeks">${weeks}</div>
     </div>`;
 }
 
-/* =============================================
-   WEIGHT PROGRESSION (per exercise)
-============================================= */
-function buildWeightChartSection() {
-  // Collect all exercises with weight data
-  const exoData = {};
-  [...TRAININGS].reverse().forEach(t => {
-    t.exercises.forEach(e => {
-      const maxW = e.sets.reduce((mx,s) => {
-        const w = parseFloat(s.weight);
-        return (!isNaN(w) && w > mx) ? w : mx;
-      }, 0);
-      if(maxW > 0) {
-        if(!exoData[e.name]) exoData[e.name] = [];
-        exoData[e.name].push({ date: t.date, weight: maxW });
-      }
-    });
-  });
-
-  const eligible = Object.entries(exoData).filter(([,v]) => v.length >= 1);
+function buildWeightChartSection(){
+  const exoData={};
+  [...TRAININGS].reverse().forEach(t=>t.exercises.forEach(e=>{
+    const maxW=e.sets.reduce((mx,s)=>{const w=parseFloat(s.weight);return(!isNaN(w)&&w>mx)?w:mx;},0);
+    if(maxW>0){ if(!exoData[e.name]) exoData[e.name]=[]; exoData[e.name].push({date:t.date,weight:maxW}); }
+  }));
+  const eligible=Object.entries(exoData).filter(([,v])=>v.length>=1);
   if(!eligible.length) return '';
-
-  eligible.sort((a,b) => b[1].length - a[1].length);
-
-  // Default selection
-  if(!selectedProgressExo || !exoData[selectedProgressExo]) {
-    selectedProgressExo = eligible[0][0];
-  }
-
-  const pillsHtml = eligible.map(([name]) =>
-    `<div class="exo-pill ${name===selectedProgressExo?'active':''}" onclick="selectProgressExo('${name.replace(/'/g,"\\'")}')">
-      ${name}
-    </div>`
+  eligible.sort((a,b)=>b[1].length-a[1].length);
+  if(!selectedProgressExo||!exoData[selectedProgressExo]) selectedProgressExo=eligible[0][0];
+  const pills=eligible.map(([name])=>
+    `<div class="exo-pill ${name===selectedProgressExo?'active':''}" onclick="selectProgressExo(${JSON.stringify(name)})">${name}</div>`
   ).join('');
-
-  const points = exoData[selectedProgressExo] || [];
-  const chartHtml = points.length >= 1 ? buildLineChart(points, 'Poids max (kg)') : '<div style="text-align:center;padding:20px;color:var(--text-muted)">Pas assez de données</div>';
-
+  const points=exoData[selectedProgressExo]||[];
   return `
     <div class="section-label">Progression – Poids par exercice</div>
     <div class="glass-card">
-      <div class="exo-selector">${pillsHtml}</div>
-      <div id="progressChartArea">${chartHtml}</div>
+      <div class="exo-selector">${pills}</div>
+      <div id="progressChartArea">${points.length?buildLineChart(points):'<div style="text-align:center;padding:20px;color:var(--text-muted)">Pas assez de données</div>'}</div>
     </div>`;
 }
-
-function selectProgressExo(name) {
-  selectedProgressExo = name;
-  renderProgress();
-  // scroll to chart
-  setTimeout(()=>{
-    const el=document.getElementById('progressChartArea');
-    if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
-  },100);
+function selectProgressExo(name){
+  selectedProgressExo=name; renderProgress();
+  setTimeout(()=>{ const el=document.getElementById('progressChartArea'); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); },100);
 }
-
-function buildLineChart(points, ylabel) {
-  const W=320, H=150, PL=38, PR=12, PT=16, PB=28;
-  const vals = points.map(p => p.weight);
-  const minV = Math.min(...vals) * 0.9;
-  const maxV = Math.max(...vals) * 1.06;
-  const range = maxV - minV || 1;
-  const n = points.length;
-  const xStep = (W - PL - PR) / (Math.max(n-1,1));
-
-  const px = i => PL + i * xStep;
-  const py = v => PT + (H-PT-PB) * (1-(v-minV)/range);
-
-  let polyline='', dots='', labels='';
-  points.forEach((p, i) => {
-    const x = px(i), y = py(p.weight);
-    polyline += `${x.toFixed(1)},${y.toFixed(1)} `;
-    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="var(--gold)" stroke="var(--black)" stroke-width="2"/>`;
-
-    // Always show label for first/last, or if n<=6
-    if(i===0 || i===n-1 || n<=6) {
+function buildLineChart(points){
+  const W=320,H=150,PL=38,PR=12,PT=16,PB=28;
+  const vals=points.map(p=>p.weight);
+  const minV=Math.min(...vals)*0.9, maxV=Math.max(...vals)*1.06, range=maxV-minV||1, n=points.length;
+  const xS=(W-PL-PR)/(Math.max(n-1,1));
+  const px=i=>PL+i*xS, py=v=>PT+(H-PT-PB)*(1-(v-minV)/range);
+  let poly='',dots='',labels='';
+  points.forEach((p,i)=>{
+    const x=px(i),y=py(p.weight);
+    poly+=`${x.toFixed(1)},${y.toFixed(1)} `;
+    dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="var(--gold)" stroke="#080808" stroke-width="2"/>`;
+    if(i===0||i===n-1||n<=6){
       const d=new Date(p.date+'T00:00:00');
-      labels += `<text x="${x.toFixed(1)}" y="${H-5}" text-anchor="middle" fill="rgba(240,240,240,0.4)" font-size="8.5">${d.getDate()}/${d.getMonth()+1}</text>`;
-      labels += `<text x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="middle" fill="var(--gold)" font-size="10" font-weight="700">${p.weight}kg</text>`;
+      labels+=`<text x="${x.toFixed(1)}" y="${H-5}" text-anchor="middle" fill="rgba(240,240,240,0.4)" font-size="8.5">${d.getDate()}/${d.getMonth()+1}</text>`;
+      labels+=`<text x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="middle" fill="var(--gold)" font-size="10" font-weight="700">${p.weight}kg</text>`;
     }
   });
-
-  const ySteps = 4;
-  let yLabels='', yGrid='';
-  for(let i=0;i<=ySteps;i++){
-    const v = minV + range*(i/ySteps);
-    const y = py(v);
-    yLabels += `<text x="${PL-4}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" fill="rgba(240,240,240,0.3)" font-size="8">${v.toFixed(0)}</text>`;
-    yGrid += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+  let yL='',yG='';
+  for(let i=0;i<=4;i++){
+    const v=minV+range*(i/4),y=py(v);
+    yL+=`<text x="${PL-4}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" fill="rgba(240,240,240,0.3)" font-size="8">${v.toFixed(0)}</text>`;
+    yG+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
   }
-
-  const gradId = 'grad'+Math.random().toString(36).slice(2,6);
-  const fillPoints = polyline + `${px(n-1).toFixed(1)},${H-PB} ${px(0).toFixed(1)},${H-PB}`;
-
-  return `<div class="chart-wrap">
-    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">
-      <defs>
-        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.3"/>
-          <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      ${yGrid}
-      ${n>1?`<polygon points="${fillPoints}" fill="url(#${gradId})"/>`:''} 
-      ${n>1?`<polyline points="${polyline.trim()}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`:''}
-      ${dots}
-      ${labels}
-      ${yLabels}
-    </svg>
-  </div>`;
+  const gId='g'+Math.random().toString(36).slice(2,6);
+  const fill=poly+`${px(n-1).toFixed(1)},${H-PB} ${px(0).toFixed(1)},${H-PB}`;
+  return `<div class="chart-wrap"><svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">
+    <defs><linearGradient id="${gId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${yG}
+    ${n>1?`<polygon points="${fill}" fill="url(#${gId})"/>`:''} 
+    ${n>1?`<polyline points="${poly.trim()}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`:''}
+    ${dots}${labels}${yL}
+  </svg></div>`;
 }
 
 function listRow(emoji,label,val,total){
@@ -1768,77 +1333,52 @@ function listRow(emoji,label,val,total){
   </div>`;
 }
 
-/* =============================================
-   MODAL
-============================================= */
+/* ── Modal ────────────────────────────────── */
 function closeMod(evt,force){
-  if(force||(evt&&evt.target===document.getElementById('modalOverlay'))){
+  if(force||(evt&&evt.target===document.getElementById('modalOverlay')))
     document.getElementById('modalOverlay').classList.remove('open');
-  }
 }
 
-/* =============================================
-   IMPORT OVERLAY (frictionless)
-============================================= */
+/* ── Import overlay ───────────────────────── */
 function openImportOverlay(){
   document.getElementById('importOverlay').classList.add('open');
-  setupDropZone();
-}
-function closeImportOverlay(){
-  document.getElementById('importOverlay').classList.remove('open');
-}
-function setupDropZone(){
   const zone=document.getElementById('dropZone');
-  if(!zone||zone._hasEvents) return;
-  zone._hasEvents=true;
-  zone.addEventListener('dragover',e=>{ e.preventDefault(); zone.classList.add('drag-over'); });
-  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
-  zone.addEventListener('drop',e=>{
-    e.preventDefault(); zone.classList.remove('drag-over');
-    const file=e.dataTransfer.files[0]; if(!file) return;
-    readImportFile(file);
-  });
+  if(zone&&!zone._ev){
+    zone._ev=true;
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
+    zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+    zone.addEventListener('drop',e=>{
+      e.preventDefault();zone.classList.remove('drag-over');
+      const f=e.dataTransfer.files[0]; if(f) readImportFile(f);
+    });
+  }
 }
-
-function importData(evt){
-  const file=evt.target.files[0]; if(!file) return;
-  readImportFile(file);
-  evt.target.value='';
-}
+function closeImportOverlay(){ document.getElementById('importOverlay').classList.remove('open'); }
+function importData(evt){ const f=evt.target.files[0]; if(!f) return; readImportFile(f); evt.target.value=''; }
 function readImportFile(file){
   const r=new FileReader();
   r.onload=e=>{
     try{
       const obj=JSON.parse(e.target.result);
-      DATA=obj.data||{};
-      TRAININGS=obj.trainings||[];
-      save(); refreshView();
-      closeImportOverlay();
-      showToast('📥 Import réussi !');
+      DATA=obj.data||{}; TRAININGS=obj.trainings||[];
+      save(); refreshView(); closeImportOverlay(); showToast('📥 Import réussi !');
     }catch{ showToast('❌ Fichier invalide'); }
   };
   r.readAsText(file);
 }
-
 function exportData(){
-  const payload={version:3,data:DATA,trainings:TRAININGS,exported:new Date().toISOString()};
-  const b=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='aph_tracker_'+ds(new Date())+'.json';
-  a.click();
+  const b=new Blob([JSON.stringify({version:3,data:DATA,trainings:TRAININGS,exported:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+  a.download='aph_tracker_'+ds(new Date())+'.json'; a.click();
   showToast('📤 Export réussi !');
 }
 function resetData(){
   if(!confirm('⚠️ Réinitialiser TOUTES les données ? Irréversible.')) return;
-  DATA={}; TRAININGS=[];
-  save(); refreshView(); showToast('🗑 Réinitialisé');
+  DATA={}; TRAININGS=[]; save(); refreshView(); showToast('🗑 Réinitialisé');
 }
 
-/* =============================================
-   VIEW SWITCH
-============================================= */
-function switchView(name, btn){
+/* ── Views ────────────────────────────────── */
+function switchView(name,btn){
   currentView=name;
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
@@ -1854,39 +1394,30 @@ function refreshView(){
   else if(currentView==='training') renderTrainingHistory();
 }
 
-/* =============================================
-   TOAST
-============================================= */
+/* ── Toast ────────────────────────────────── */
 let toastTimer;
 function showToast(msg){
   clearTimeout(toastTimer);
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
   toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-/* =============================================
-   INIT
-============================================= */
+/* ── Init ─────────────────────────────────── */
 function init(){
   load();
-  const days=allDates().length;
   const el=document.getElementById('totalDaysSetting');
-  if(el) el.textContent=days+' jours';
-
+  if(el) el.textContent=allDates().length+' jours';
   initTrainingDate();
   selectSession('APH1');
   renderTrainingHistory();
   renderSeances();
   renderToday();
   updateBadge();
-
   setTimeout(()=>{
     const tc=document.querySelector('.day-card.today');
     if(tc) tc.scrollIntoView({behavior:'smooth',block:'nearest'});
   },150);
 }
-
 init();
 </script>
 </body>
