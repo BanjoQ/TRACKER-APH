@@ -2,13 +2,12 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AP-H">
 <title>AP-H Tracker</title>
 
-<!-- ===== APPLE TOUCH ICON (arrow-up performance logo, gold on black) ===== -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230A0A0A'/%3E%3Cpolygon points='90,28 130,90 108,90 108,150 72,150 72,90 50,90' fill='%23F5C518'/%3E%3C/svg%3E">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0A0A'/%3E%3Cpolygon points='16,5 23,16 19,16 19,27 13,27 13,16 9,16' fill='%23F5C518'/%3E%3C/svg%3E">
 
@@ -35,15 +34,21 @@
   --radius-xs: 8px;
   --shadow: 0 8px 40px rgba(0,0,0,0.6);
   --shadow-gold: 0 0 20px rgba(245,197,24,0.25);
+  --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --nav-height: 56px;
+  --nav-total: calc(var(--nav-height) + var(--safe-bottom));
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; height: -webkit-fill-available; }
 body {
   font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
   background: var(--black);
   color: var(--text);
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
@@ -71,6 +76,7 @@ button, input, textarea, select { font-family: inherit; }
   background: rgba(8,8,8,0.88);
   border-bottom: 1px solid var(--gold-border);
   padding: 10px 16px 10px;
+  padding-top: max(10px, var(--safe-top));
   display: flex; align-items: center; gap: 11px;
 }
 .hdr-logo {
@@ -78,7 +84,7 @@ button, input, textarea, select { font-family: inherit; }
   background: var(--gold-dim); border: 1px solid var(--gold-glow);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
-.hdr-logo svg, .hdr-logo img { width: 34px; height: 34px; object-fit: contain; }
+.hdr-logo svg { width: 34px; height: 34px; }
 .hdr-title { flex: 1; }
 .hdr-title h1 {
   font-size: 17px; font-weight: 800; letter-spacing: -0.4px;
@@ -86,34 +92,52 @@ button, input, textarea, select { font-family: inherit; }
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 .hdr-title p { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.hdr-actions { display: flex; gap: 8px; align-items: center; }
 .hdr-badge {
   background: var(--gold-dim); border: 1px solid var(--gold-glow);
   color: var(--gold); font-size: 11px; font-weight: 700;
   padding: 4px 10px; border-radius: 20px; letter-spacing: 0.3px;
 }
+.hdr-import-btn {
+  background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border);
+  color: var(--text-mid); font-size: 18px; font-weight: 700;
+  width: 34px; height: 34px; border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.hdr-import-btn:active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
 
 /* ===========================
-   BOTTOM NAV (iPhone style)
+   BOTTOM NAV (iPhone style — FIXED)
 =========================== */
 .bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  background: rgba(8,8,8,0.92);
+  background: rgba(8,8,8,0.95);
   border-top: 1px solid var(--gold-border);
   display: flex;
-  padding-bottom: var(--safe-bottom);
+  /* This is the key fix: padding-bottom accounts for the iPhone home indicator */
+  padding-bottom: max(var(--safe-bottom), 8px);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+  height: var(--nav-total);
+  min-height: 56px;
 }
 .nav-item {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 8px 4px 10px; gap: 3px;
+  padding: 6px 2px 0;
+  gap: 2px;
   cursor: pointer; border: none; background: none;
-  color: var(--text-muted); font-size: 9px; font-weight: 600;
+  color: var(--text-muted); font-size: 8.5px; font-weight: 600;
   letter-spacing: 0.3px; text-transform: uppercase;
   transition: color 0.18s;
+  min-height: 44px;
 }
-.nav-item .nav-icon { font-size: 20px; line-height: 1; transition: transform 0.18s; }
+.nav-item .nav-icon { font-size: 19px; line-height: 1; transition: transform 0.18s; }
 .nav-item.active { color: var(--gold); }
 .nav-item.active .nav-icon { transform: scale(1.12); }
 
@@ -122,7 +146,9 @@ button, input, textarea, select { font-family: inherit; }
 =========================== */
 .main {
   position: relative; z-index: 1;
-  padding: 14px 14px 100px;
+  padding: 14px 14px;
+  /* Extra padding at bottom for nav bar + safe area */
+  padding-bottom: calc(var(--nav-total) + 18px);
   max-width: 600px; margin: 0 auto;
 }
 .view { display: none; animation: fadeView 0.25s ease; }
@@ -181,7 +207,7 @@ button, input, textarea, select { font-family: inherit; }
 .day-score b { color: var(--gold); }
 
 /* ===========================
-   CHECKS GRID (3 cols)
+   CHECKS GRID
 =========================== */
 .checks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 10px; }
 .check-item {
@@ -189,6 +215,7 @@ button, input, textarea, select { font-family: inherit; }
   padding: 9px 4px; border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border); background: var(--card);
   cursor: pointer; transition: all 0.16s; user-select: none;
+  min-width: 0; /* prevent overflow */
 }
 .check-item.checked { background: var(--gold-dim); border-color: rgba(245,197,24,0.5); }
 .check-icon {
@@ -196,17 +223,18 @@ button, input, textarea, select { font-family: inherit; }
   border: 2px solid rgba(255,255,255,0.12);
   display: flex; align-items: center; justify-content: center;
   font-size: 15px; transition: all 0.16s; background: transparent; color: transparent;
+  flex-shrink: 0;
 }
 .check-item.checked .check-icon {
   background: var(--gold); border-color: var(--gold);
   box-shadow: 0 0 12px rgba(245,197,24,0.5); color: var(--black);
 }
 .check-label {
-  font-size: 10px; font-weight: 600; text-align: center;
+  font-size: 9px; font-weight: 600; text-align: center;
   color: var(--text-muted); line-height: 1.2; letter-spacing: 0.2px;
+  word-break: break-word; width: 100%;
 }
 .check-item.checked .check-label { color: var(--gold); }
-.check-item.active-session { border-color: rgba(245,197,24,0.4); background: rgba(245,197,24,0.08); }
 
 /* ===========================
    PROGRESS BAR
@@ -279,7 +307,9 @@ button, input, textarea, select { font-family: inherit; }
 .modal-sheet {
   width: 100%; max-height: 88vh; overflow-y: auto;
   background: #131313; border-top: 1px solid var(--gold-border);
-  border-radius: 22px 22px 0 0; padding: 16px 16px calc(16px + var(--safe-bottom));
+  border-radius: 22px 22px 0 0;
+  padding: 16px 16px;
+  padding-bottom: max(16px, var(--safe-bottom));
   animation: slideUp 0.28s cubic-bezier(.22,.68,0,1.2);
 }
 @keyframes slideUp { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
@@ -295,7 +325,7 @@ button, input, textarea, select { font-family: inherit; }
 .modal-close { width: 100%; padding: 15px; background: var(--gold); color: var(--black); font-size: 15px; font-weight: 800; border: none; border-radius: var(--radius); cursor: pointer; margin-top: 14px; }
 
 /* ===========================
-   TRAINING LOG
+   TRAINING LOG — MOBILE FIXED
 =========================== */
 .training-date-selector {
   display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
@@ -305,48 +335,98 @@ button, input, textarea, select { font-family: inherit; }
   background: var(--glass); border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm); color: var(--text);
   font-size: 14px; outline: none; color-scheme: dark;
+  min-width: 0; /* critical for mobile overflow fix */
 }
 .training-date-selector input[type=date]:focus { border-color: rgba(245,197,24,0.4); }
-.session-picker { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+.session-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* fixed 3-col to avoid overflow */
+  gap: 7px; margin-bottom: 14px;
+}
+/* second row for APH Home */
+.session-picker.has-home {
+  grid-template-columns: repeat(3, 1fr);
+}
 .session-pill {
-  flex: 1; min-width: 80px; padding: 10px 8px;
+  padding: 10px 6px;
   background: var(--glass); border: 1px solid var(--glass-border);
   border-radius: 20px; color: var(--text-mid);
-  font-size: 13px; font-weight: 700; text-align: center;
+  font-size: 12px; font-weight: 700; text-align: center;
   cursor: pointer; transition: all 0.15s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .session-pill.active { background: var(--gold); border-color: var(--gold); color: var(--black); box-shadow: var(--shadow-gold); }
+.session-pill.home-pill { grid-column: 1 / -1; /* full width for APH Home */ }
+.session-pill.home-pill.active { background: linear-gradient(135deg,#6B8CFF,#4A6EFF); border-color: #4A6EFF; color: white; box-shadow: 0 0 20px rgba(74,110,255,0.4); }
+
+/* APH Home — custom exercise builder */
+.home-exo-builder { margin-bottom: 16px; }
+.home-exo-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.home-exo-card {
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  position: relative;
+}
+.home-exo-name-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.home-exo-name-input {
+  flex: 1; padding: 8px 12px;
+  background: var(--card); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xs); color: var(--text);
+  font-size: 13px; font-weight: 700; outline: none;
+  min-width: 0;
+}
+.home-exo-name-input:focus { border-color: rgba(245,197,24,0.4); }
+.home-exo-name-input::placeholder { color: var(--text-muted); font-weight: 400; }
+.del-exo-btn {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(255,60,60,0.12); border: 1px solid rgba(255,60,60,0.2);
+  color: #ff6060; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.add-home-exo-btn {
+  width: 100%; padding: 12px; border-radius: var(--radius-sm);
+  background: var(--gold-dim); border: 1px dashed rgba(245,197,24,0.35);
+  color: var(--gold); font-size: 13px; font-weight: 700;
+  cursor: pointer; text-align: center; transition: all 0.15s;
+}
+.add-home-exo-btn:active { background: var(--gold); color: var(--black); }
 
 /* Exercise logger */
 .exo-logger { margin-bottom: 10px; }
 .exo-logger-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.exo-logger-name { font-size: 14px; font-weight: 700; }
+.exo-logger-name { font-size: 14px; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; margin-right: 8px; }
 .add-set-btn {
   font-size: 11px; font-weight: 700;
   padding: 5px 12px; border-radius: 20px;
   background: var(--gold-dim); border: 1px solid var(--gold-glow);
   color: var(--gold); cursor: pointer; transition: all 0.15s;
+  flex-shrink: 0;
 }
 .add-set-btn:active { background: var(--gold); color: var(--black); }
 .set-rows { display: flex; flex-direction: column; gap: 6px; }
-.set-row { display: grid; grid-template-columns: 36px 1fr 1fr auto; gap: 6px; align-items: center; }
+.set-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr 28px; /* fixed columns, no overflow */
+  gap: 5px; align-items: center;
+}
 .set-num { font-size: 11px; font-weight: 700; color: var(--text-muted); text-align: center; }
 .set-input {
-  padding: 9px 10px; background: var(--card);
+  padding: 9px 6px; background: var(--card);
   border: 1px solid var(--glass-border); border-radius: var(--radius-xs);
   color: var(--text); font-size: 13px; text-align: center; outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s; min-width: 0; width: 100%;
 }
 .set-input:focus { border-color: rgba(245,197,24,0.4); }
-.set-input::placeholder { color: var(--text-muted); font-size: 11px; }
+.set-input::placeholder { color: var(--text-muted); font-size: 10px; }
 .del-set-btn {
   width: 28px; height: 28px; border-radius: 50%;
   background: rgba(255,60,60,0.12); border: 1px solid rgba(255,60,60,0.2);
   color: #ff6060; font-size: 14px; cursor: pointer;
   display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  flex-shrink: 0;
 }
 .del-set-btn:active { background: rgba(255,60,60,0.3); }
-.set-header-row { display: grid; grid-template-columns: 36px 1fr 1fr 28px; gap: 6px; margin-bottom: 4px; }
+.set-header-row { display: grid; grid-template-columns: 28px 1fr 1fr 28px; gap: 5px; margin-bottom: 4px; }
 .set-col-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); text-align: center; }
 .exo-comment {
   width: 100%; margin-top: 6px; padding: 8px 10px;
@@ -370,9 +450,14 @@ button, input, textarea, select { font-family: inherit; }
   cursor: pointer; transition: border-color 0.15s;
 }
 .training-log-entry:active { border-color: rgba(245,197,24,0.4); }
-.log-entry-header { display: flex; justify-content: space-between; align-items: center; }
+.log-entry-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .log-entry-date { font-size: 13px; font-weight: 700; }
-.log-entry-session { font-size: 11px; font-weight: 700; color: var(--gold); background: var(--gold-dim); padding: 3px 9px; border-radius: 20px; border: 1px solid var(--gold-glow); }
+.log-entry-session {
+  font-size: 11px; font-weight: 700; color: var(--gold);
+  background: var(--gold-dim); padding: 3px 9px; border-radius: 20px;
+  border: 1px solid var(--gold-glow); flex-shrink: 0;
+}
+.log-entry-session.home-session { color: #8BA4FF; background: rgba(74,110,255,0.15); border-color: rgba(74,110,255,0.3); }
 .log-entry-summary { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
 .delete-log-btn {
   font-size: 11px; padding: 4px 10px; border-radius: 20px;
@@ -394,6 +479,17 @@ button, input, textarea, select { font-family: inherit; }
 .chart-select:focus { border-color: rgba(245,197,24,0.4); }
 
 /* ===========================
+   EXERCISE SELECTOR (progress)
+=========================== */
+.exo-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.exo-pill {
+  padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+}
+.exo-pill.active { background: var(--gold-dim); border-color: rgba(245,197,24,0.5); color: var(--gold); }
+
+/* ===========================
    RING
 =========================== */
 .ring-container { display: flex; flex-direction: column; align-items: center; padding: 10px 0 16px; }
@@ -405,7 +501,7 @@ button, input, textarea, select { font-family: inherit; }
 .ring-lbl { font-size: 12px; color: var(--text-muted); }
 
 /* ===========================
-   SEANCES VIEW (clean cards)
+   SEANCES VIEW
 =========================== */
 .seance-card {
   background: var(--glass); border: 1px solid var(--glass-border);
@@ -417,7 +513,11 @@ button, input, textarea, select { font-family: inherit; }
   background: linear-gradient(135deg, rgba(245,197,24,0.12), rgba(245,197,24,0.04));
   padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
 }
+.seance-card.home-card .seance-card-header {
+  background: linear-gradient(135deg, rgba(74,110,255,0.15), rgba(74,110,255,0.04));
+}
 .seance-card-title { font-size: 17px; font-weight: 900; background: linear-gradient(135deg, var(--gold-light), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.seance-card.home-card .seance-card-title { background: linear-gradient(135deg, #8BA4FF, #4A6EFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .seance-card-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .seance-card-expand { font-size: 20px; color: var(--text-muted); transition: transform 0.25s; }
 .seance-card.expanded .seance-card-expand { transform: rotate(90deg); }
@@ -429,6 +529,45 @@ button, input, textarea, select { font-family: inherit; }
 .sc-exo:last-child { border: none; }
 .sc-exo-name { font-size: 13px; font-weight: 600; }
 .sc-exo-detail { font-size: 12px; color: var(--text-muted); background: var(--card); padding: 2px 8px; border-radius: 20px; border: 1px solid var(--glass-border); }
+
+/* ===========================
+   COMPLIANCE HISTOGRAM
+=========================== */
+.compliance-bar-chart { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.compliance-bar-chart svg { display: block; min-width: 100%; }
+
+/* ===========================
+   CYCLE TIMELINE
+=========================== */
+.cycle-timeline {
+  position: relative; padding: 12px 0 4px;
+}
+.timeline-track {
+  height: 6px; border-radius: 3px; background: rgba(255,255,255,0.07);
+  position: relative; margin: 0 0 8px;
+}
+.timeline-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  transition: width 0.5s ease;
+}
+.timeline-cursor {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--gold); border: 2px solid var(--black);
+  box-shadow: 0 0 10px rgba(245,197,24,0.6);
+}
+.timeline-labels { display: flex; justify-content: space-between; }
+.timeline-label { font-size: 9px; color: var(--text-muted); font-weight: 600; }
+.timeline-weeks { display: flex; justify-content: space-between; margin-top: 10px; gap: 3px; }
+.timeline-week {
+  flex: 1; text-align: center; padding: 6px 2px;
+  border-radius: var(--radius-xs); font-size: 8px; font-weight: 700;
+  color: var(--text-muted); background: var(--card); border: 1px solid var(--glass-border);
+  transition: all 0.15s;
+}
+.timeline-week.current { background: var(--gold-dim); border-color: rgba(245,197,24,0.5); color: var(--gold); }
+.timeline-week.past { background: rgba(255,255,255,0.03); color: rgba(240,240,240,0.3); }
 
 /* ===========================
    ACTIONS
@@ -445,12 +584,15 @@ button, input, textarea, select { font-family: inherit; }
 .action-btn.danger { border-color: rgba(255,60,60,0.25); color: #ff6060; }
 .action-btn.danger:active { background: rgba(255,60,60,0.1); }
 #importFile { display: none; }
+#importFileHeader { display: none; }
 
 /* ===========================
    TOAST
 =========================== */
 #toast {
-  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(60px);
+  position: fixed;
+  bottom: calc(var(--nav-total) + 14px);
+  left: 50%; transform: translateX(-50%) translateY(60px);
   background: #1c1c1c; border: 1px solid var(--gold-glow);
   color: var(--text); font-size: 13px; font-weight: 600;
   padding: 11px 22px; border-radius: 22px; z-index: 300;
@@ -458,6 +600,35 @@ button, input, textarea, select { font-family: inherit; }
   box-shadow: var(--shadow); pointer-events: none;
 }
 #toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ===========================
+   IMPORT OVERLAY (frictionless)
+=========================== */
+.import-overlay {
+  display: none; position: fixed; inset: 0; z-index: 250;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.import-overlay.open { display: flex; }
+.import-box {
+  background: #131313; border: 1px solid var(--gold-border);
+  border-radius: 22px; padding: 28px 24px; max-width: 360px; width: 100%;
+  text-align: center; animation: fadeIn 0.25s ease;
+}
+.import-box h2 { font-size: 22px; font-weight: 900; background: linear-gradient(135deg,var(--gold-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom: 8px; }
+.import-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+.import-drop-zone {
+  border: 2px dashed rgba(245,197,24,0.3); border-radius: var(--radius);
+  padding: 32px 16px; margin-bottom: 16px; cursor: pointer;
+  transition: all 0.2s; background: var(--gold-dim);
+}
+.import-drop-zone:hover { border-color: rgba(245,197,24,0.6); background: rgba(245,197,24,0.2); }
+.import-drop-zone.drag-over { border-color: var(--gold); background: rgba(245,197,24,0.25); }
+.import-drop-icon { font-size: 36px; margin-bottom: 8px; }
+.import-drop-text { font-size: 14px; font-weight: 700; color: var(--gold); }
+.import-drop-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.import-cancel { color: var(--text-muted); font-size: 13px; cursor: pointer; border: none; background: none; padding: 8px; }
 
 /* ===========================
    PRINT
@@ -485,7 +656,6 @@ button, input, textarea, select { font-family: inherit; }
 <!-- HEADER -->
 <header class="header">
   <div class="hdr-logo">
-    <!-- Arrow-up performance SVG logo -->
     <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
       <polygon points="20,4 32,18 25,18 25,36 15,36 15,18 8,18" fill="#F5C518"/>
     </svg>
@@ -494,7 +664,10 @@ button, input, textarea, select { font-family: inherit; }
     <h1>AP-H Tracker</h1>
     <p id="cycleSubtitle">26 Avr → 1 Jul 2026</p>
   </div>
-  <div class="hdr-badge" id="globalBadge">0%</div>
+  <div class="hdr-actions">
+    <button class="hdr-import-btn" onclick="openImportOverlay()" title="Importer données">📥</button>
+    <div class="hdr-badge" id="globalBadge">0%</div>
+  </div>
 </header>
 
 <!-- MAIN -->
@@ -528,10 +701,11 @@ button, input, textarea, select { font-family: inherit; }
     <div class="training-date-selector">
       <input type="date" id="trainingDate">
     </div>
-    <div class="session-picker" id="sessionPicker">
+    <div class="session-picker has-home" id="sessionPicker">
       <div class="session-pill active" data-session="APH1" onclick="selectSession('APH1')">APH1</div>
       <div class="session-pill" data-session="APH2" onclick="selectSession('APH2')">APH2</div>
       <div class="session-pill" data-session="APH3" onclick="selectSession('APH3')">APH3</div>
+      <div class="session-pill home-pill" data-session="APHHOME" onclick="selectSession('APHHOME')">🏠 APH Home</div>
     </div>
     <div id="trainingExos"></div>
     <button class="save-training-btn" onclick="saveTraining()">💾 Sauvegarder la séance</button>
@@ -544,16 +718,15 @@ button, input, textarea, select { font-family: inherit; }
     <div id="progressContainer"></div>
   </div>
 
-  <!-- SETTINGS (accessible via gear icon in progress or today) -->
+  <!-- SETTINGS -->
   <div class="view" id="view-settings">
     <div class="section-label">Données</div>
     <div class="actions-row">
       <button class="action-btn" onclick="exportData()">📤 Exporter</button>
-      <button class="action-btn" onclick="document.getElementById('importFile').click()">📥 Importer</button>
+      <button class="action-btn" onclick="openImportOverlay()">📥 Importer</button>
       <input type="file" id="importFile" accept=".json" onchange="importData(event)">
     </div>
     <div class="actions-row">
-      <button class="action-btn" onclick="window.print()">🖨️ Imprimer</button>
       <button class="action-btn danger" onclick="resetData()">🗑️ Réinitialiser</button>
     </div>
     <div class="section-label">Cycle</div>
@@ -562,10 +735,9 @@ button, input, textarea, select { font-family: inherit; }
       <div class="list-row"><span class="list-lbl">📅 Fin</span><span class="list-val">1 Jul 2026</span></div>
       <div class="list-row"><span class="list-lbl">📆 Durée</span><span class="list-val" id="totalDaysSetting">—</span></div>
     </div>
-    <div class="section-label">Apple Favoris</div>
+    <div class="section-label">Ajouter sur l'écran d'accueil</div>
     <div class="glass-card">
       <p style="font-size:13px;color:var(--text-mid);line-height:1.6">
-        Pour ajouter en favori avec icône :<br>
         Safari → <b style="color:var(--gold)">Partager</b> → <b style="color:var(--gold)">Sur l'écran d'accueil</b><br>
         L'icône flèche dorée s'affichera automatiquement.
       </p>
@@ -596,12 +768,27 @@ button, input, textarea, select { font-family: inherit; }
   </button>
 </nav>
 
-<!-- SEANCE MODAL (used on mobile quick view) -->
+<!-- SEANCE MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeMod(event)">
   <div class="modal-sheet" id="modalSheet">
     <div class="modal-handle"></div>
     <div id="modalBody"></div>
     <button class="modal-close" onclick="closeMod(null,true)">Fermer</button>
+  </div>
+</div>
+
+<!-- IMPORT OVERLAY -->
+<div class="import-overlay" id="importOverlay">
+  <div class="import-box">
+    <h2>📥 Importer</h2>
+    <p>Importe ton fichier de données APH Tracker pour restaurer ta progression sans friction.</p>
+    <div class="import-drop-zone" id="dropZone" onclick="document.getElementById('importFileOverlay').click()">
+      <div class="import-drop-icon">📂</div>
+      <div class="import-drop-text">Tap ou glisse ton fichier ici</div>
+      <div class="import-drop-sub">Format .json exporté depuis l'app</div>
+    </div>
+    <input type="file" id="importFileOverlay" accept=".json" onchange="importData(event)" style="display:none">
+    <button class="import-cancel" onclick="closeImportOverlay()">Annuler</button>
   </div>
 </div>
 
@@ -617,22 +804,19 @@ const END   = new Date(2026,6,1);   // Jul 1
 const DAYS_FR   = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 
-// Fields for daily check — logic: APH+JJB are mutually exclusive group (1 of 5 = full),
-// others (water, sleep, nutrition, supps, rest) are individual daily goals
 const CHECK_FIELDS = [
-  { key:'aph1',  label:'APH1', emoji:'🏋️', group:'session' },
-  { key:'aph2',  label:'APH2', emoji:'💪', group:'session' },
-  { key:'aph3',  label:'APH3', emoji:'🔥', group:'session' },
-  { key:'jjb',   label:'JJB',  emoji:'🥋', group:'session' },
-  { key:'rest',  label:'Repos',emoji:'🌿', group:'session' },
-  { key:'water', label:'Eau 2.5L', emoji:'💧', group:'habit' },
-  { key:'sleep', label:'Sommeil', emoji:'😴', group:'habit' },
-  { key:'nutrition',label:'Nutrition',emoji:'🥗', group:'habit' },
-  { key:'supps', label:'Compléments',emoji:'💊', group:'habit' },
+  { key:'aph1',  label:'APH1',    emoji:'🏋️', group:'session' },
+  { key:'aph2',  label:'APH2',    emoji:'💪',  group:'session' },
+  { key:'aph3',  label:'APH3',    emoji:'🔥',  group:'session' },
+  { key:'aphhome', label:'Home',  emoji:'🏠',  group:'session' },
+  { key:'jjb',   label:'JJB',     emoji:'🥋',  group:'session' },
+  { key:'rest',  label:'Repos',   emoji:'🌿',  group:'session' },
+  { key:'water', label:'Eau 2.5L',emoji:'💧',  group:'habit' },
+  { key:'sleep', label:'Sommeil', emoji:'😴',  group:'habit' },
+  { key:'nutrition',label:'Nutrition',emoji:'🥗',group:'habit' },
+  { key:'supps', label:'Compléments',emoji:'💊',group:'habit' },
 ];
 
-// For scoring: session group counts as 1 if ANY is checked; habits count individually
-// Max daily score = 1 (session) + 4 (habits) = 5
 function dayScore(ds) {
   const d = getDay(ds);
   const sessionOk = CHECK_FIELDS.filter(f=>f.group==='session').some(f=>d[f.key]);
@@ -709,21 +893,22 @@ const SEANCES_DATA = {
   }
 };
 
-// Exercises per session for training log
 const SESSION_EXOS = {
   APH1: ['Squat','Fentes bulgares','Tirage poulie','Épaule chevalier servant','Biceps','Triceps'],
   APH2: ['Développé Couché','DC incliné haltères','Tirage TRX','Montées genoux suspendu','Biceps','Rotation barre'],
   APH3: ['Tractions','Gorilla Row KB','Pompes Swiss Ball','Face Pull','Biceps','Triceps','Ischio/Copenhagen'],
+  APHHOME: [], // dynamic — user defines exercises
 };
 
 /* =============================================
    STATE
 ============================================= */
-let DATA = {};        // { 'YYYY-MM-DD': { fields..., notes:'' } }
-let TRAININGS = [];   // [{ id, date, session, exercises:[{name, sets:[{reps,weight}], comment}] }]
+let DATA = {};
+let TRAININGS = [];
 let weekOffset = 0;
 let currentView = 'today';
 let selectedSession = 'APH1';
+let homeExoCount = 0; // for APH Home dynamic exos
 
 /* =============================================
    STORAGE
@@ -776,23 +961,15 @@ function updateBadge() {
 ============================================= */
 function toggle(dateStr, key) {
   const d=getDay(dateStr);
-  // If toggling a session key (aph1/2/3/jjb/rest),
-  // uncheck all others in session group first if checking new one
-  const sessionKeys=['aph1','aph2','aph3','jjb','rest'];
+  const sessionKeys=['aph1','aph2','aph3','aphhome','jjb','rest'];
   if(sessionKeys.includes(key)) {
     const was = !!d[key];
-    // Allow toggling off
     if(was) { d[key]=false; }
-    else {
-      // Uncheck others in session group
-      sessionKeys.forEach(k=>{ d[k]=false; });
-      d[key]=true;
-    }
+    else { sessionKeys.forEach(k=>{ d[k]=false; }); d[key]=true; }
   } else {
     d[key]=!d[key];
   }
-  save();
-  refreshView();
+  save(); refreshView();
 }
 function setNote(ds,val){ getDay(ds).notes=val; save(); }
 
@@ -805,7 +982,6 @@ function renderDayCard(date) {
   const score=dayScore(dateStr);
   const today=isToday(date);
 
-  // Split fields into session group (row 1) and habit group (row 2)
   const sessionFields=CHECK_FIELDS.filter(f=>f.group==='session');
   const habitFields=CHECK_FIELDS.filter(f=>f.group==='habit');
 
@@ -837,7 +1013,7 @@ function renderDayCard(date) {
     <div class="prog-wrap"><div class="prog-bar" style="width:${score.pct}%"></div></div>
 
     <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:10px 0 6px">Séance du jour (1 seule)</div>
-    <div class="checks-grid" style="grid-template-columns:repeat(5,1fr)">${sessionHtml}</div>
+    <div class="checks-grid" style="grid-template-columns:repeat(3,1fr)">${sessionHtml}</div>
 
     <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:10px 0 6px">Habitudes quotidiennes</div>
     <div class="checks-grid" style="grid-template-columns:repeat(4,1fr)">${habitHtml}</div>
@@ -897,7 +1073,7 @@ function renderWeek() {
     const dd=getDay(dateStr);
     const s=dayScore(dateStr);
     tc+=s.checked; tt+=s.total;
-    if(dd.aph1||dd.aph2||dd.aph3) aph++;
+    if(dd.aph1||dd.aph2||dd.aph3||dd.aphhome) aph++;
     if(dd.jjb) jjb++;
     daysHtml+=renderDayCard(d);
   }
@@ -948,11 +1124,30 @@ function renderSeances() {
       <div class="seance-card-body">${sectHtml}</div>
     </div>`;
   });
+  // APH Home info card
+  html+=`<div class="seance-card home-card" id="sc-APHHOME" onclick="toggleSeanceCard('APHHOME')">
+    <div class="seance-card-header">
+      <div>
+        <div class="seance-card-title">APH Home</div>
+        <div class="seance-card-meta">🏠 Entraînement custom à domicile</div>
+      </div>
+      <div class="seance-card-expand">›</div>
+    </div>
+    <div class="seance-card-body">
+      <div class="sc-section">
+        <div class="sc-section-title">Comment ça marche</div>
+        <div style="font-size:13px;color:var(--text-mid);line-height:1.6;padding:4px 0">
+          Dans l'onglet Training, sélectionne <b style="color:#8BA4FF">APH Home</b>, puis ajoute librement tes exercices, séries et charges.<br><br>
+          Tes sessions home sont loguées dans l'historique et intégrées dans les stats de progression.
+        </div>
+      </div>
+    </div>
+  </div>`;
   c.innerHTML=html;
 }
 function toggleSeanceCard(key){
   const el=document.getElementById('sc-'+key);
-  el.classList.toggle('expanded');
+  if(el) el.classList.toggle('expanded');
 }
 
 /* =============================================
@@ -972,6 +1167,11 @@ function selectSession(s){
   renderTrainingExos();
 }
 function renderTrainingExos(){
+  const container=document.getElementById('trainingExos');
+  if(selectedSession==='APHHOME'){
+    renderHomeExos();
+    return;
+  }
   const exos=SESSION_EXOS[selectedSession]||[];
   let html='';
   exos.forEach((exo,ei)=>{
@@ -987,13 +1187,65 @@ function renderTrainingExos(){
         <div class="set-col-lbl"></div>
       </div>
       <div class="set-rows" id="sets-${ei}"></div>
-      <textarea class="exo-comment" rows="1" id="comment-${ei}" placeholder="Commentaire (difficulté, ressenti...)"></textarea>
+      <textarea class="exo-comment" rows="1" id="comment-${ei}" placeholder="Commentaire..."></textarea>
     </div>`;
   });
-  document.getElementById('trainingExos').innerHTML=html;
-  // Add initial set for each
+  container.innerHTML=html;
   exos.forEach((_,ei)=>addSet(ei));
 }
+
+/* APH HOME: dynamic exercise builder */
+function renderHomeExos(){
+  const container=document.getElementById('trainingExos');
+  homeExoCount=0;
+  container.innerHTML=`<div class="home-exo-builder">
+    <div class="home-exo-list" id="homeExoList"></div>
+    <button class="add-home-exo-btn" onclick="addHomeExo()">+ Ajouter un exercice</button>
+  </div>`;
+  addHomeExo(); // start with 1
+}
+function addHomeExo(){
+  const list=document.getElementById('homeExoList');
+  if(!list) return;
+  const ei=homeExoCount++;
+  const div=document.createElement('div');
+  div.className='home-exo-card';
+  div.id=`home-exo-${ei}`;
+  div.innerHTML=`
+    <div class="home-exo-name-row">
+      <input class="home-exo-name-input" type="text" placeholder="Nom de l'exercice..." id="home-exo-name-${ei}">
+      <button class="del-exo-btn" onclick="document.getElementById('home-exo-${ei}').remove()">×</button>
+    </div>
+    <div class="set-header-row">
+      <div class="set-col-lbl">Série</div>
+      <div class="set-col-lbl">Poids (kg)</div>
+      <div class="set-col-lbl">Reps</div>
+      <div class="set-col-lbl"></div>
+    </div>
+    <div class="set-rows" id="home-sets-${ei}"></div>
+    <button class="add-set-btn" style="margin-top:8px;font-size:10px" onclick="addHomeSet(${ei})">+ Série</button>
+  `;
+  list.appendChild(div);
+  addHomeSet(ei);
+}
+function addHomeSet(ei){
+  const container=document.getElementById('home-sets-'+ei);
+  if(!container) return;
+  const idx=container.children.length+1;
+  const row=document.createElement('div');
+  row.className='set-row';
+  row.innerHTML=`
+    <div class="set-num">${idx}</div>
+    <input class="set-input" type="number" placeholder="kg" step="0.5" min="0">
+    <input class="set-input" type="number" placeholder="reps" min="0">
+    <button class="del-set-btn" onclick="this.parentElement.remove();renumberHomeSets(${ei})">×</button>`;
+  container.appendChild(row);
+}
+function renumberHomeSets(ei){
+  const rows=document.querySelectorAll(`#home-sets-${ei} .set-row`);
+  rows.forEach((r,i)=>{ const n=r.querySelector('.set-num'); if(n) n.textContent=i+1; });
+}
+
 function addSet(ei){
   const container=document.getElementById('sets-'+ei);
   if(!container) return;
@@ -1011,42 +1263,66 @@ function renumberSets(ei){
   const rows=document.querySelectorAll(`#sets-${ei} .set-row`);
   rows.forEach((r,i)=>{ const n=r.querySelector('.set-num'); if(n) n.textContent=i+1; });
 }
+
 function saveTraining(){
   const dateVal=document.getElementById('trainingDate').value;
   if(!dateVal){ showToast('⚠️ Sélectionne une date'); return; }
-  const exos=SESSION_EXOS[selectedSession]||[];
-  const exercises=exos.map((exo,ei)=>{
-    const sets=[...document.querySelectorAll(`#sets-${ei} .set-row`)].map(row=>{
-      const inputs=row.querySelectorAll('input');
-      return { weight: inputs[0]?.value||'', reps: inputs[1]?.value||'' };
-    }).filter(s=>s.reps||s.weight);
-    const comment=document.getElementById('comment-'+ei)?.value||'';
-    return { name:exo, sets, comment };
-  });
+
+  let exercises=[];
+  if(selectedSession==='APHHOME'){
+    // Collect from dynamic home exos
+    const cards=document.querySelectorAll('#homeExoList .home-exo-card');
+    cards.forEach(card=>{
+      const idMatch=card.id.match(/home-exo-(\d+)/);
+      if(!idMatch) return;
+      const ei=idMatch[1];
+      const nameEl=document.getElementById('home-exo-name-'+ei);
+      const name=(nameEl?.value||'').trim()||'Exercice';
+      const sets=[...document.querySelectorAll(`#home-sets-${ei} .set-row`)].map(row=>{
+        const inputs=row.querySelectorAll('input');
+        return { weight: inputs[0]?.value||'', reps: inputs[1]?.value||'' };
+      }).filter(s=>s.reps||s.weight);
+      exercises.push({ name, sets, comment:'' });
+    });
+    if(!exercises.length){ showToast('⚠️ Ajoute au moins un exercice'); return; }
+  } else {
+    const exos=SESSION_EXOS[selectedSession]||[];
+    exercises=exos.map((exo,ei)=>{
+      const sets=[...document.querySelectorAll(`#sets-${ei} .set-row`)].map(row=>{
+        const inputs=row.querySelectorAll('input');
+        return { weight: inputs[0]?.value||'', reps: inputs[1]?.value||'' };
+      }).filter(s=>s.reps||s.weight);
+      const comment=document.getElementById('comment-'+ei)?.value||'';
+      return { name:exo, sets, comment };
+    });
+  }
+
   const entry={ id:Date.now(), date:dateVal, session:selectedSession, exercises };
   TRAININGS.unshift(entry);
   save();
   renderTrainingHistory();
   showToast('✅ Séance sauvegardée !');
-  // reset
   renderTrainingExos();
 }
+
 function renderTrainingHistory(){
   const c=document.getElementById('trainingHistory');
   if(!TRAININGS.length){ c.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-muted)">Aucune séance enregistrée</div>'; return; }
   let html='';
-  TRAININGS.slice(0,20).forEach(t=>{
+  TRAININGS.slice(0,30).forEach(t=>{
     const totalSets=t.exercises.reduce((a,e)=>a+e.sets.length,0);
     const maxWeight=t.exercises.reduce((mx,e)=>{
       e.sets.forEach(s=>{ const w=parseFloat(s.weight); if(!isNaN(w)&&w>mx) mx=w; });
       return mx;
     },0);
+    const isHome=t.session==='APHHOME';
+    const sessionLabel=isHome?'APH Home':t.session;
     html+=`<div class="training-log-entry" onclick="viewTraining(${t.id})">
       <div class="log-entry-header">
         <div class="log-entry-date">${fmtFull(new Date(t.date+'T00:00:00'))}</div>
-        <div class="log-entry-session">${t.session}</div>
+        <div class="log-entry-session ${isHome?'home-session':''}">${sessionLabel}</div>
       </div>
-      <div class="log-entry-summary">${totalSets} séries · Max ${maxWeight>0?maxWeight+'kg':'—'} · ${t.exercises.filter(e=>e.comment).length} commentaire(s)</div>
+      <div class="log-entry-summary">${totalSets} séries · Max ${maxWeight>0?maxWeight+'kg':'—'} · ${t.exercises.filter(e=>e.sets.length).length} exo(s)</div>
       <button class="delete-log-btn" onclick="event.stopPropagation();deleteTraining(${t.id})">🗑 Supprimer</button>
     </div>`;
   });
@@ -1054,7 +1330,8 @@ function renderTrainingHistory(){
 }
 function viewTraining(id){
   const t=TRAININGS.find(x=>x.id===id); if(!t) return;
-  let html=`<div class="modal-title">${t.session} – ${fmtFull(new Date(t.date+'T00:00:00'))}</div>`;
+  const isHome=t.session==='APHHOME';
+  let html=`<div class="modal-title">${isHome?'APH Home':t.session} – ${fmtFull(new Date(t.date+'T00:00:00'))}</div>`;
   t.exercises.forEach(e=>{
     if(!e.sets.length&&!e.comment) return;
     html+=`<div class="seance-section">
@@ -1082,12 +1359,14 @@ function deleteTraining(id){
 /* =============================================
    VIEW: PROGRESS
 ============================================= */
+let selectedProgressExo = null;
+
 function renderProgress(){
   const c=document.getElementById('progressContainer');
   const dates=allDates();
   const today=new Date(); today.setHours(0,0,0,0);
   let totalDays=dates.length, elapsed=0;
-  let tc=0,tt=0,aph1=0,aph2=0,aph3=0,jjb=0,rest=0,water=0,sleep=0,nutrition=0,supps=0;
+  let tc=0,tt=0,aph1=0,aph2=0,aph3=0,aphHome=0,jjb=0,rest=0,water=0,sleep=0,nutrition=0,supps=0;
   dates.forEach(d=>{
     if(d<=today) elapsed++;
     const dateStr=ds(d);
@@ -1095,6 +1374,7 @@ function renderProgress(){
     const s=dayScore(dateStr);
     tc+=s.checked; tt+=s.total;
     if(dd.aph1)aph1++; if(dd.aph2)aph2++; if(dd.aph3)aph3++;
+    if(dd.aphhome)aphHome++;
     if(dd.jjb)jjb++; if(dd.rest)rest++;
     if(dd.water)water++; if(dd.sleep)sleep++;
     if(dd.nutrition)nutrition++; if(dd.supps)supps++;
@@ -1104,7 +1384,7 @@ function renderProgress(){
   const circ=2*Math.PI*52;
   const off=circ*(1-pct/100);
 
-  // Training stats per exercise
+  // Exercise stats
   const exoStats={};
   TRAININGS.forEach(t=>{
     t.exercises.forEach(e=>{
@@ -1118,8 +1398,14 @@ function renderProgress(){
     });
   });
 
-  // Weight progression chart for top exercises
-  const chartHtml=buildWeightChart();
+  // Compliance histogram
+  const histogramHtml=buildComplianceHistogram(dates,today);
+
+  // Cycle timeline
+  const timelineHtml=buildCycleTimeline(dates,today,elapsed,totalDays,cyclePct);
+
+  // Weight progression (per exercise selector)
+  const weightProgressHtml=buildWeightChartSection();
 
   c.innerHTML=`
     <div class="gold-card">
@@ -1139,22 +1425,26 @@ function renderProgress(){
         <div style="flex:1">
           <div style="font-size:22px;font-weight:900;color:var(--gold)">${elapsed}<span style="font-size:13px;color:var(--text-muted);font-weight:400"> / ${totalDays} j</span></div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Jours écoulés</div>
-          <div class="prog-wrap" style="margin-top:10px"><div class="prog-bar" style="width:${cyclePct}%"></div></div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:3px">${cyclePct}% du cycle</div>
         </div>
       </div>
     </div>
 
+    <div class="section-label">Timeline du Cycle</div>
+    <div class="glass-card">${timelineHtml}</div>
+
+    <div class="section-label">Compliance Jour par Jour</div>
+    <div class="glass-card" style="padding:12px">
+      ${histogramHtml}
+    </div>
+
     <div class="section-label">Séances</div>
-    <div class="stats-grid c4">
+    <div class="stats-grid" style="grid-template-columns:repeat(2,1fr)">
       <div class="stat-card"><div class="stat-val">${aph1}</div><div class="stat-lbl">APH1</div></div>
       <div class="stat-card"><div class="stat-val">${aph2}</div><div class="stat-lbl">APH2</div></div>
       <div class="stat-card"><div class="stat-val">${aph3}</div><div class="stat-lbl">APH3</div></div>
+      <div class="stat-card"><div class="stat-val">${aphHome}</div><div class="stat-lbl">APH Home</div></div>
       <div class="stat-card"><div class="stat-val">${jjb}</div><div class="stat-lbl">JJB</div></div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val">${aph1+aph2+aph3}</div><div class="stat-lbl">Total APH</div></div>
-      <div class="stat-card"><div class="stat-val">${TRAININGS.length}</div><div class="stat-lbl">Séances log</div></div>
+      <div class="stat-card"><div class="stat-val">${aph1+aph2+aph3+aphHome}</div><div class="stat-lbl">Total APH</div></div>
     </div>
 
     <div class="section-label">Habitudes</div>
@@ -1166,10 +1456,12 @@ function renderProgress(){
       ${listRow('🌿','Jours repos',rest,elapsed)}
     </div>
 
+    ${weightProgressHtml}
+
     ${Object.keys(exoStats).length?`
     <div class="section-label">Records par exercice</div>
     <div class="glass-card">
-      ${Object.entries(exoStats).map(([name,s])=>
+      ${Object.entries(exoStats).sort((a,b)=>b[1].maxWeight-a[1].maxWeight).map(([name,s])=>
         `<div class="list-row">
           <div class="list-lbl" style="font-size:12px">${name}</div>
           <div style="text-align:right">
@@ -1179,9 +1471,216 @@ function renderProgress(){
         </div>`
       ).join('')}
     </div>`:''}
-
-    ${chartHtml}
   `;
+}
+
+/* =============================================
+   COMPLIANCE HISTOGRAM (bar chart SVG)
+============================================= */
+function buildComplianceHistogram(dates, today) {
+  const pastDates = dates.filter(d => d <= today);
+  if(!pastDates.length) return '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px">Pas encore de données</div>';
+
+  // Show last N days that have elapsed
+  const showDates = pastDates.slice(-42); // max 42 bars
+  const n = showDates.length;
+  const W = 320, H = 110, PL = 0, PR = 0, PT = 14, PB = 22;
+  const barW = Math.max(2, Math.floor((W - PL - PR) / n) - 1);
+  const gap = Math.floor((W - PL - PR) / n);
+  const chartH = H - PT - PB;
+
+  let bars = '';
+  let xLabels = '';
+
+  showDates.forEach((d, i) => {
+    const dateStr = ds(d);
+    const s = dayScore(dateStr);
+    const barH = Math.max(2, Math.round(chartH * s.pct / 100));
+    const x = PL + i * gap;
+    const y = PT + chartH - barH;
+    const pct = s.pct;
+
+    // Color gradient based on compliance
+    let fill;
+    if(pct >= 80) fill = 'var(--gold)';
+    else if(pct >= 60) fill = 'rgba(245,197,24,0.7)';
+    else if(pct >= 40) fill = 'rgba(245,197,24,0.45)';
+    else if(pct > 0) fill = 'rgba(245,197,24,0.25)';
+    else fill = 'rgba(255,255,255,0.06)';
+
+    bars += `<rect x="${x}" y="${y}" width="${Math.max(barW,2)}" height="${barH}" fill="${fill}" rx="2"/>`;
+
+    // Show date label every 7 days or at start/end
+    if(i === 0 || i === n-1 || (n > 7 && i % 7 === 0)) {
+      const label = `${d.getDate()}/${d.getMonth()+1}`;
+      xLabels += `<text x="${x + barW/2}" y="${H-4}" text-anchor="middle" fill="rgba(240,240,240,0.35)" font-size="8">${label}</text>`;
+    }
+  });
+
+  // Horizontal guide lines
+  let guides = '';
+  [0,50,100].forEach(pct => {
+    const y = PT + chartH - Math.round(chartH * pct / 100);
+    guides += `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+    if(pct > 0) guides += `<text x="${W-PR-2}" y="${y-2}" text-anchor="end" fill="rgba(240,240,240,0.2)" font-size="8">${pct}%</text>`;
+  });
+
+  return `<div class="compliance-bar-chart">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="height:${H}px">
+      ${guides}
+      ${bars}
+      ${xLabels}
+    </svg>
+  </div>`;
+}
+
+/* =============================================
+   CYCLE TIMELINE
+============================================= */
+function buildCycleTimeline(dates, today, elapsed, totalDays, cyclePct) {
+  // Week segments
+  const totalWeeks = Math.ceil(totalDays / 7);
+  const currentWeekNum = Math.floor(elapsed / 7);
+
+  let weeksHtml = '';
+  for(let w = 0; w < totalWeeks; w++) {
+    const isPast = w < currentWeekNum;
+    const isCurrent = w === currentWeekNum;
+    const weekStart = new Date(START);
+    weekStart.setDate(START.getDate() + w * 7);
+    const label = `S${w+1}`;
+    weeksHtml += `<div class="timeline-week ${isPast?'past':''} ${isCurrent?'current':''}">${label}</div>`;
+  }
+
+  return `
+    <div class="cycle-timeline">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700">Progression du cycle</div>
+        <div style="font-size:12px;color:var(--gold);font-weight:700">${cyclePct}%</div>
+      </div>
+      <div class="timeline-track">
+        <div class="timeline-fill" style="width:${cyclePct}%"></div>
+        <div class="timeline-cursor" style="left:${Math.min(cyclePct,98)}%"></div>
+      </div>
+      <div class="timeline-labels">
+        <span class="timeline-label">26 Avr</span>
+        <span class="timeline-label" style="color:var(--gold)">Aujourd'hui</span>
+        <span class="timeline-label">1 Jul</span>
+      </div>
+      <div class="timeline-weeks">${weeksHtml}</div>
+    </div>`;
+}
+
+/* =============================================
+   WEIGHT PROGRESSION (per exercise)
+============================================= */
+function buildWeightChartSection() {
+  // Collect all exercises with weight data
+  const exoData = {};
+  [...TRAININGS].reverse().forEach(t => {
+    t.exercises.forEach(e => {
+      const maxW = e.sets.reduce((mx,s) => {
+        const w = parseFloat(s.weight);
+        return (!isNaN(w) && w > mx) ? w : mx;
+      }, 0);
+      if(maxW > 0) {
+        if(!exoData[e.name]) exoData[e.name] = [];
+        exoData[e.name].push({ date: t.date, weight: maxW });
+      }
+    });
+  });
+
+  const eligible = Object.entries(exoData).filter(([,v]) => v.length >= 1);
+  if(!eligible.length) return '';
+
+  eligible.sort((a,b) => b[1].length - a[1].length);
+
+  // Default selection
+  if(!selectedProgressExo || !exoData[selectedProgressExo]) {
+    selectedProgressExo = eligible[0][0];
+  }
+
+  const pillsHtml = eligible.map(([name]) =>
+    `<div class="exo-pill ${name===selectedProgressExo?'active':''}" onclick="selectProgressExo('${name.replace(/'/g,"\\'")}')">
+      ${name}
+    </div>`
+  ).join('');
+
+  const points = exoData[selectedProgressExo] || [];
+  const chartHtml = points.length >= 1 ? buildLineChart(points, 'Poids max (kg)') : '<div style="text-align:center;padding:20px;color:var(--text-muted)">Pas assez de données</div>';
+
+  return `
+    <div class="section-label">Progression – Poids par exercice</div>
+    <div class="glass-card">
+      <div class="exo-selector">${pillsHtml}</div>
+      <div id="progressChartArea">${chartHtml}</div>
+    </div>`;
+}
+
+function selectProgressExo(name) {
+  selectedProgressExo = name;
+  renderProgress();
+  // scroll to chart
+  setTimeout(()=>{
+    const el=document.getElementById('progressChartArea');
+    if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },100);
+}
+
+function buildLineChart(points, ylabel) {
+  const W=320, H=150, PL=38, PR=12, PT=16, PB=28;
+  const vals = points.map(p => p.weight);
+  const minV = Math.min(...vals) * 0.9;
+  const maxV = Math.max(...vals) * 1.06;
+  const range = maxV - minV || 1;
+  const n = points.length;
+  const xStep = (W - PL - PR) / (Math.max(n-1,1));
+
+  const px = i => PL + i * xStep;
+  const py = v => PT + (H-PT-PB) * (1-(v-minV)/range);
+
+  let polyline='', dots='', labels='';
+  points.forEach((p, i) => {
+    const x = px(i), y = py(p.weight);
+    polyline += `${x.toFixed(1)},${y.toFixed(1)} `;
+    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="var(--gold)" stroke="var(--black)" stroke-width="2"/>`;
+
+    // Always show label for first/last, or if n<=6
+    if(i===0 || i===n-1 || n<=6) {
+      const d=new Date(p.date+'T00:00:00');
+      labels += `<text x="${x.toFixed(1)}" y="${H-5}" text-anchor="middle" fill="rgba(240,240,240,0.4)" font-size="8.5">${d.getDate()}/${d.getMonth()+1}</text>`;
+      labels += `<text x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="middle" fill="var(--gold)" font-size="10" font-weight="700">${p.weight}kg</text>`;
+    }
+  });
+
+  const ySteps = 4;
+  let yLabels='', yGrid='';
+  for(let i=0;i<=ySteps;i++){
+    const v = minV + range*(i/ySteps);
+    const y = py(v);
+    yLabels += `<text x="${PL-4}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" fill="rgba(240,240,240,0.3)" font-size="8">${v.toFixed(0)}</text>`;
+    yGrid += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+  }
+
+  const gradId = 'grad'+Math.random().toString(36).slice(2,6);
+  const fillPoints = polyline + `${px(n-1).toFixed(1)},${H-PB} ${px(0).toFixed(1)},${H-PB}`;
+
+  return `<div class="chart-wrap">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">
+      <defs>
+        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${yGrid}
+      ${n>1?`<polygon points="${fillPoints}" fill="url(#${gradId})"/>`:''} 
+      ${n>1?`<polyline points="${polyline.trim()}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`:''}
+      ${dots}
+      ${labels}
+      ${yLabels}
+    </svg>
+  </div>`;
 }
 
 function listRow(emoji,label,val,total){
@@ -1195,101 +1694,6 @@ function listRow(emoji,label,val,total){
   </div>`;
 }
 
-function buildWeightChart(){
-  if(!TRAININGS.length) return '';
-  // Find exercises with weight data across multiple sessions
-  const exoData={};
-  [...TRAININGS].reverse().forEach(t=>{
-    t.exercises.forEach(e=>{
-      const maxW=e.sets.reduce((mx,s)=>{const w=parseFloat(s.weight);return(!isNaN(w)&&w>mx)?w:mx;},0);
-      if(maxW>0){
-        if(!exoData[e.name]) exoData[e.name]=[];
-        exoData[e.name].push({date:t.date,weight:maxW,session:t.session});
-      }
-    });
-  });
-  const eligible=Object.entries(exoData).filter(([,v])=>v.length>=2);
-  if(!eligible.length) return '';
-
-  // Pick top exercise (most data points)
-  eligible.sort((a,b)=>b[1].length-a[1].length);
-  const topExo=eligible[0][0];
-  const points=eligible[0][1];
-
-  return `
-    <div class="section-label">Progression – ${topExo}</div>
-    <div class="glass-card">
-      ${buildLineChart(points,'Poids max (kg)')}
-    </div>
-    ${eligible.length>1?`
-    <div class="section-label">Progression – ${eligible[1][0]}</div>
-    <div class="glass-card">
-      ${buildLineChart(eligible[1][1],'Poids max (kg)')}
-    </div>`:''}
-  `;
-}
-
-function buildLineChart(points, ylabel){
-  const W=320, H=140, PL=36, PR=10, PT=12, PB=28;
-  const vals=points.map(p=>p.weight);
-  const minV=Math.min(...vals)*0.92, maxV=Math.max(...vals)*1.05;
-  const range=maxV-minV||1;
-  const n=points.length;
-  const xStep=(W-PL-PR)/(Math.max(n-1,1));
-
-  const px=(i)=>PL+i*xStep;
-  const py=(v)=>PT+(H-PT-PB)*(1-(v-minV)/range);
-
-  let polyline='';
-  let dots='';
-  let labels='';
-  points.forEach((p,i)=>{
-    const x=px(i), y=py(p.weight);
-    polyline+=`${x.toFixed(1)},${y.toFixed(1)} `;
-    dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="var(--gold)" stroke="var(--black)" stroke-width="2"/>`;
-    // Label every n/4 points
-    if(i===0||i===n-1||n<=5){
-      const d=new Date(p.date+'T00:00:00');
-      labels+=`<text x="${x.toFixed(1)}" y="${H-4}" text-anchor="middle" fill="rgba(240,240,240,0.4)" font-size="9">${d.getDate()}/${d.getMonth()+1}</text>`;
-    }
-    // Weight label on top
-    if(i===n-1||i===0){
-      labels+=`<text x="${x.toFixed(1)}" y="${(y-8).toFixed(1)}" text-anchor="middle" fill="var(--gold)" font-size="10" font-weight="700">${p.weight}kg</text>`;
-    }
-  });
-
-  // Y axis labels
-  const ySteps=3;
-  let yLabels='', yGrid='';
-  for(let i=0;i<=ySteps;i++){
-    const v=minV+range*(i/ySteps);
-    const y=py(v);
-    yLabels+=`<text x="${PL-4}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" fill="rgba(240,240,240,0.3)" font-size="9">${v.toFixed(0)}</text>`;
-    yGrid+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
-  }
-
-  // Gradient fill
-  const gradId='grad'+Math.random().toString(36).slice(2,6);
-  const fillPoints=polyline+`${px(n-1).toFixed(1)},${H-PB} ${px(0).toFixed(1)},${H-PB}`;
-
-  return `<div class="chart-wrap">
-    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">
-      <defs>
-        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.25"/>
-          <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      ${yGrid}
-      <polygon points="${fillPoints}" fill="url(#${gradId})"/>
-      <polyline points="${polyline.trim()}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      ${dots}
-      ${labels}
-      ${yLabels}
-    </svg>
-  </div>`;
-}
-
 /* =============================================
    MODAL
 ============================================= */
@@ -1297,6 +1701,64 @@ function closeMod(evt,force){
   if(force||(evt&&evt.target===document.getElementById('modalOverlay'))){
     document.getElementById('modalOverlay').classList.remove('open');
   }
+}
+
+/* =============================================
+   IMPORT OVERLAY (frictionless)
+============================================= */
+function openImportOverlay(){
+  document.getElementById('importOverlay').classList.add('open');
+  setupDropZone();
+}
+function closeImportOverlay(){
+  document.getElementById('importOverlay').classList.remove('open');
+}
+function setupDropZone(){
+  const zone=document.getElementById('dropZone');
+  if(!zone||zone._hasEvents) return;
+  zone._hasEvents=true;
+  zone.addEventListener('dragover',e=>{ e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const file=e.dataTransfer.files[0]; if(!file) return;
+    readImportFile(file);
+  });
+}
+
+function importData(evt){
+  const file=evt.target.files[0]; if(!file) return;
+  readImportFile(file);
+  evt.target.value='';
+}
+function readImportFile(file){
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const obj=JSON.parse(e.target.result);
+      DATA=obj.data||{};
+      TRAININGS=obj.trainings||[];
+      save(); refreshView();
+      closeImportOverlay();
+      showToast('📥 Import réussi !');
+    }catch{ showToast('❌ Fichier invalide'); }
+  };
+  r.readAsText(file);
+}
+
+function exportData(){
+  const payload={version:3,data:DATA,trainings:TRAININGS,exported:new Date().toISOString()};
+  const b=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download='aph_tracker_'+ds(new Date())+'.json';
+  a.click();
+  showToast('📤 Export réussi !');
+}
+function resetData(){
+  if(!confirm('⚠️ Réinitialiser TOUTES les données ? Irréversible.')) return;
+  DATA={}; TRAININGS=[];
+  save(); refreshView(); showToast('🗑 Réinitialisé');
 }
 
 /* =============================================
@@ -1319,38 +1781,6 @@ function refreshView(){
 }
 
 /* =============================================
-   EXPORT / IMPORT / RESET
-============================================= */
-function exportData(){
-  const payload={version:2,data:DATA,trainings:TRAININGS,exported:new Date().toISOString()};
-  const b=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='aph_tracker_'+ds(new Date())+'.json';
-  a.click();
-  showToast('📤 Export réussi !');
-}
-function importData(evt){
-  const file=evt.target.files[0]; if(!file) return;
-  const r=new FileReader();
-  r.onload=e=>{
-    try{
-      const obj=JSON.parse(e.target.result);
-      DATA=obj.data||{};
-      TRAININGS=obj.trainings||[];
-      save(); refreshView(); showToast('📥 Import réussi !');
-    }catch{ showToast('❌ Fichier invalide'); }
-  };
-  r.readAsText(file);
-  evt.target.value='';
-}
-function resetData(){
-  if(!confirm('⚠️ Réinitialiser TOUTES les données ? Irréversible.')) return;
-  DATA={}; TRAININGS=[];
-  save(); refreshView(); showToast('🗑 Réinitialisé');
-}
-
-/* =============================================
    TOAST
 ============================================= */
 let toastTimer;
@@ -1366,12 +1796,10 @@ function showToast(msg){
 ============================================= */
 function init(){
   load();
-  // Cycle info
   const days=allDates().length;
   const el=document.getElementById('totalDaysSetting');
   if(el) el.textContent=days+' jours';
 
-  // Init training view
   initTrainingDate();
   selectSession('APH1');
   renderTrainingHistory();
@@ -1379,7 +1807,6 @@ function init(){
   renderToday();
   updateBadge();
 
-  // Scroll to today
   setTimeout(()=>{
     const tc=document.querySelector('.day-card.today');
     if(tc) tc.scrollIntoView({behavior:'smooth',block:'nearest'});
