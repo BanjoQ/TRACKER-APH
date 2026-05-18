@@ -8,8 +8,74 @@
 <meta name="apple-mobile-web-app-title" content="AP-H">
 <title>AP-H Tracker</title>
 
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230A0A0A'/%3E%3Cpolygon points='90,28 130,90 108,90 108,150 72,150 72,90 50,90' fill='%23F5C518'/%3E%3C/svg%3E">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0A0A'/%3E%3Cpolygon points='16,5 23,16 19,16 19,27 13,27 13,16 9,16' fill='%23F5C518'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" id="appleIcon">
+<link rel="icon" id="favIcon">
+<script>
+// Generate feather icon as PNG via canvas (required — Safari ignores SVG data URIs for apple-touch-icon)
+(function(){
+  function makeIcon(size, radius) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    // Rounded background
+    const r = radius;
+    ctx.beginPath();
+    ctx.moveTo(r,0); ctx.lineTo(size-r,0);
+    ctx.arcTo(size,0,size,r,r); ctx.lineTo(size,size-r);
+    ctx.arcTo(size,size,size-r,size,r); ctx.lineTo(r,size);
+    ctx.arcTo(0,size,0,size-r,r); ctx.lineTo(0,r);
+    ctx.arcTo(0,0,r,0,r); ctx.closePath();
+    ctx.fillStyle = '#080808';
+    ctx.fill();
+    // Draw feather (plume) in gold
+    const s = size; ctx.save();
+    ctx.strokeStyle = '#F5C518'; ctx.fillStyle = '#F5C518';
+    ctx.lineWidth = s * 0.028;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // Scale: feather fits in ~60% of icon
+    const sc = s / 180;
+    ctx.scale(sc, sc);
+    // Feather quill spine: from bottom-center curving up-right to tip
+    const cx = 90, base = 155, tip_x = 110, tip_y = 28;
+    ctx.beginPath();
+    ctx.moveTo(cx, base);
+    ctx.bezierCurveTo(cx-8, 110, tip_x-20, 60, tip_x, tip_y);
+    ctx.stroke();
+    // Left vane barbs
+    for(let i=0;i<9;i++){
+      const t = i/8;
+      const bx = cx + (tip_x-cx)*t*t - 8*(1-t);
+      const by = base + (tip_y-base)*t;
+      const ex = bx - 32*(1-t*0.7);
+      const ey = by + 14*(1-t);
+      ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ex,ey); ctx.stroke();
+    }
+    // Right vane barbs
+    for(let i=0;i<9;i++){
+      const t = i/8;
+      const bx = cx + (tip_x-cx)*t*t - 8*(1-t);
+      const by = base + (tip_y-base)*t;
+      const ex = bx + 26*(1-t*0.6);
+      const ey = by + 10*(1-t);
+      ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ex,ey); ctx.stroke();
+    }
+    // Feather tip fill
+    ctx.beginPath();
+    ctx.arc(tip_x, tip_y, s*0.025/sc, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+    return c.toDataURL('image/png');
+  }
+  window.addEventListener('DOMContentLoaded', function(){
+    const icon180 = makeIcon(180, 40);
+    const icon32  = makeIcon(32, 7);
+    document.getElementById('appleIcon').href = icon180;
+    document.getElementById('favIcon').href   = icon32;
+    // Also update as type
+    document.getElementById('favIcon').type = 'image/png';
+  });
+})();
+</script>
 
 <style>
 /* ===========================
@@ -108,36 +174,44 @@ button, input, textarea, select { font-family: inherit; }
 .hdr-import-btn:active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
 
 /* ===========================
-   BOTTOM NAV (iPhone style — FIXED)
+   BOTTOM NAV — TRULY FIXED, NEVER MOVES
 =========================== */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: 100;
+  z-index: 200;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  background: rgba(8,8,8,0.95);
+  background: rgba(8,8,8,0.97);
   border-top: 1px solid var(--gold-border);
   display: flex;
-  /* This is the key fix: padding-bottom accounts for the iPhone home indicator */
-  padding-bottom: max(var(--safe-bottom), 8px);
-  padding-left: var(--safe-left);
-  padding-right: var(--safe-right);
-  height: var(--nav-total);
-  min-height: 56px;
+  /* Fixed pixel height for the tab bar itself */
+  height: 54px;
+  /* Safe area padding BELOW the fixed height (home indicator on iPhone X+) */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Include safe area in overall box so it grows downward, not inward */
+  box-sizing: content-box;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  /* Prevent ANY layout reflow from touching this element */
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 .nav-item {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 6px 2px 0;
-  gap: 2px;
+  padding: 6px 2px 4px;
+  gap: 3px;
   cursor: pointer; border: none; background: none;
   color: var(--text-muted); font-size: 8.5px; font-weight: 600;
   letter-spacing: 0.3px; text-transform: uppercase;
   transition: color 0.18s;
-  min-height: 44px;
+  /* Fixed height to match parent, never expands */
+  height: 54px;
+  overflow: hidden;
 }
-.nav-item .nav-icon { font-size: 19px; line-height: 1; transition: transform 0.18s; }
+.nav-item .nav-icon { font-size: 19px; line-height: 1; transition: transform 0.18s; flex-shrink: 0; }
 .nav-item.active { color: var(--gold); }
 .nav-item.active .nav-icon { transform: scale(1.12); }
 
@@ -147,8 +221,8 @@ button, input, textarea, select { font-family: inherit; }
 .main {
   position: relative; z-index: 1;
   padding: 14px 14px;
-  /* Extra padding at bottom for nav bar + safe area */
-  padding-bottom: calc(var(--nav-total) + 18px);
+  /* Fixed offset: 54px nav + safe area + breathing room */
+  padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px) + 22px);
   max-width: 600px; margin: 0 auto;
 }
 .view { display: none; animation: fadeView 0.25s ease; }
@@ -591,7 +665,7 @@ button, input, textarea, select { font-family: inherit; }
 =========================== */
 #toast {
   position: fixed;
-  bottom: calc(var(--nav-total) + 14px);
+  bottom: calc(54px + env(safe-area-inset-bottom, 0px) + 14px);
   left: 50%; transform: translateX(-50%) translateY(60px);
   background: #1c1c1c; border: 1px solid var(--gold-glow);
   color: var(--text); font-size: 13px; font-weight: 600;
